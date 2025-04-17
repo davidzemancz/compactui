@@ -82,7 +82,6 @@ const CTableDemo: React.FC = () => {
           data={users}
           selectionMode={selectedMode}
           onSelectionChange={handleSelectionChange}
-          searchable={true}
         />
     </div>
   );

@@ -76,7 +76,7 @@ const TableHeader: React.FC<TableHeaderProps> = ({
     <thead>
       <tr>
         {selectionMode === 'checkbox' && (
-          <th className="ctable-checkbox-header">
+          <th>
             <input
               ref={checkboxRef}
               type="checkbox"
@@ -88,8 +88,10 @@ const TableHeader: React.FC<TableHeaderProps> = ({
         {columns.map((column) => (
           <th 
             key={column.key}
-            className={`ctable-header ${column.sortable ? 'ctable-sortable' : ''}`}
-            data-align={getAlignmentType(column.dataType)}
+            style={{ 
+              cursor: column.sortable ? 'pointer' : 'default',
+              textAlign: getAlignmentType(column.dataType) as any
+            }}
             onClick={() => onSort(column.key)}
           >
             {column.header}
@@ -139,12 +141,14 @@ const TableBody: React.FC<TableBodyProps> = ({
         return (
           <tr 
             key={rowId}
-            className={`ctable-row ${isSelected && selectionMode === 'single' ? 'ctable-row-selected' : ''}`}
+            style={{ 
+              backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined,
+            }}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
             {selectionMode === 'checkbox' && (
               <td 
-                className="ctable-checkbox-cell"
+                style={{ textAlign: 'center', cursor: 'pointer' }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectRow(rowId, !isSelected);
@@ -161,8 +165,7 @@ const TableBody: React.FC<TableBodyProps> = ({
             {columns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}
-                className="ctable-cell"
-                data-align={getAlignmentType(column.dataType)}
+                style={{ textAlign: getAlignmentType(column.dataType) as any }}
               >
                 {formatCellValue(row[column.key], column.dataType)}
               </td>
@@ -289,17 +292,18 @@ export const CTable: React.FC<CTableProps> = ({
   }, [data, searchTerm, sortConfig, columns]);
 
   return (
-    <div className="ctable-wrapper">
-      <div className="ctable-search">
+    <div>
+      <div style={{ marginBottom: '10px' }}>
         <input
           type="text"
-          className="ctable-search-input"
           placeholder="Vyhledat..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: '200px' }}
         />
       </div>
-      <table className="ctable">
+      
+      <table style={{ borderCollapse: 'collapse' }}>
         <TableHeader 
           columns={columns} 
           sortConfig={sortConfig} 
@@ -317,8 +321,9 @@ export const CTable: React.FC<CTableProps> = ({
           onSelectRow={handleSelectRow}
         />
       </table>
+      
       {filteredAndSortedData.length === 0 && (
-        <div className="ctable-no-data">
+        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
           Nebyla nalezena žádná data
         </div>
       )}
