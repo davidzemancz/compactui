@@ -9,10 +9,11 @@ interface TableBodyProps {
   selectedIds: any[];
   onSelectRow: (id: any, selected?: boolean) => void;
   columnOrder: string[];
+  onLinkClicked?: (rowId: any, columnKey: string, value: any) => void;
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ 
-  columns, data, selectionMode, selectedIds, onSelectRow, columnOrder 
+  columns, data, selectionMode, selectedIds, onSelectRow, columnOrder, onLinkClicked
 }) => {
   const orderedColumns = [...columns].sort((a, b) => 
     columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
@@ -53,9 +54,17 @@ const TableBody: React.FC<TableBodyProps> = ({
               <td 
                 key={`${rowId}-${column.key}`}
                 style={{ textAlign: getAlignmentType(column.dataType) as any }}
-                title={String(row[column.key] || '')}
+                title={column.dataType === 'link' ? String(row[column.key] || '') : String(row[column.key] || '')}
               >
-                {formatCellValue(row[column.key], column.dataType, column.dateFormat)}
+                {formatCellValue(
+                  row[column.key], 
+                  column.dataType, 
+                  column.dateFormat, 
+                  column.linkText,
+                  column.dataType === 'link' && onLinkClicked 
+                    ? (value) => onLinkClicked(rowId, column.key, value) 
+                    : undefined
+                )}
               </td>
             ))}
           </tr>

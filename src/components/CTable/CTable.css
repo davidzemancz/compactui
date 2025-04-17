@@ -284,3 +284,19 @@
   padding: 2px 6px;
   height: 22px;
 }
+
+/* Link styling */
+.ctable-link {
+  color: #2196f3;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ctable-link:hover {
+  text-decoration: underline;
+  color: #0d8aee;
+}
+
+.ctable-link:active {
+  color: #0b7ad1;
+}

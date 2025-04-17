@@ -14,7 +14,13 @@ export const formatDate = (date: Date, format: string): string => {
   return format.replace(/dd|MM|yyyy|HH|mm|ss/g, match => parts[match as keyof typeof parts]);
 };
 
-export const formatCellValue = (value: any, dataType?: ColumnDataType, dateFormat?: string): React.ReactNode => {
+export const formatCellValue = (
+  value: any, 
+  dataType?: ColumnDataType, 
+  dateFormat?: string, 
+  linkText?: string,
+  onLinkClick?: (value: any) => void
+): React.ReactNode => {
   if (value === undefined || value === null) return '';
   
   switch (dataType) {
@@ -37,6 +43,20 @@ export const formatCellValue = (value: any, dataType?: ColumnDataType, dateForma
       } catch {
         return value;
       }
+    case 'link':
+      return (
+        <a 
+          href="#" 
+          className="ctable-link"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onLinkClick) onLinkClick(value);
+          }}
+        >
+          {linkText || value}
+        </a>
+      );
     default:
       return value.toString();
   }

@@ -46,7 +46,7 @@ const CTableDemo: React.FC = () => {
   const columns: Column[] = [
     { key: 'id', header: 'ID', dataType: 'int' },
     { key: 'name', header: 'Name', dataType: 'string' },
-    { key: 'email', header: 'Email', dataType: 'string' },
+    { key: 'email', header: 'Email', dataType: 'link', linkText: 'Send Email' },
     { key: 'role', header: 'Role', dataType: 'string' },
     { key: 'active', header: 'Status', dataType: 'bool' },
     { key: 'salary', header: 'Salary', dataType: 'decimal' },
@@ -60,6 +60,11 @@ const CTableDemo: React.FC = () => {
   const [selectedMode, setSelectedMode] = useState<SelectionMode>('single'); // Change to 'single' or 'multi' as needed
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
+  const handleLinkClick = (rowId: any, columnKey: string, value: any) => {
+    alert(`Link clicked: Row ID: ${rowId}, Column: ${columnKey}, Value: ${value}`);
+    // In a real app, you would likely navigate or perform some action
+  };
+
   return (
     <div>
       <h1>Komponenta CTable</h1>
@@ -68,6 +73,7 @@ const CTableDemo: React.FC = () => {
         data={users}
         selectionMode={selectedMode}
         onSelectionChange={setSelectedIds}
+        onLinkClicked={handleLinkClick}
         storageKey="demo-table" // Add storage key for persistence
       />
     </div>

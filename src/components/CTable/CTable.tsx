@@ -9,6 +9,7 @@ const CTable: React.FC<CTableProps> = ({
   data,
   selectionMode = 'single',
   onSelectionChange,
+  onLinkClicked,
   storageKey
 }) => {
   // Initialize sort config with data from localStorage if available
@@ -352,6 +353,7 @@ const CTable: React.FC<CTableProps> = ({
             selectedIds={selectedIds}
             onSelectRow={handleSelectRow}
             columnOrder={columnOrder}
+            onLinkClicked={onLinkClicked}
           />
         </table>
       </div>
