@@ -3,7 +3,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 // Types
 export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool';
 export type SortDirection = 'asc' | 'desc' | null;
-export type SelectionMode = 'none' | 'single' | 'checkbox';
+export type SelectionMode = 'single' | 'checkbox';
 
 export interface Column {
   key: string;
@@ -142,12 +142,17 @@ const TableBody: React.FC<TableBodyProps> = ({
             key={rowId}
             style={{ 
               backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined,
-              cursor: selectionMode !== 'none' ? 'pointer' : undefined
             }}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
             {selectionMode === 'checkbox' && (
-              <td style={{ textAlign: 'center' }}>
+              <td 
+                style={{ textAlign: 'center', cursor: 'pointer' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectRow(rowId, !isSelected);
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={isSelected}
@@ -175,7 +180,7 @@ const TableBody: React.FC<TableBodyProps> = ({
 export const CTable: React.FC<CTableProps> = ({ 
   columns, 
   data,
-  selectionMode = 'none',
+  selectionMode = 'single',
   onSelectionChange
 }) => {
   const [sortConfig, setSortConfig] = useState<{

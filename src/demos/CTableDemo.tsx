@@ -106,7 +106,7 @@ const handleSelectionChange = (selectedIds: number[]) => {
 <CTable 
   columns={columns}
   data={data}
-  selectionMode="single" // Možnosti: 'none', 'single', 'checkbox'
+  selectionMode="single" // Možnosti: 'single' (výchozí), 'checkbox'
   onSelectionChange={handleSelectionChange}
 />
 `}</pre>
@@ -127,7 +127,7 @@ const handleSelectionChange = (selectedIds: number[]) => {
         <ul>
           <li><code>columns</code> (Column[]) - Definice sloupců</li>
           <li><code>data</code> (any[]) - Pole dat (objekty musí mít vlastnost 'id')</li>
-          <li><code>selectionMode</code> (volitelné) - Režim výběru řádků ('none', 'single', 'checkbox')</li>
+          <li><code>selectionMode</code> (volitelné) - Režim výběru řádků ('single' (výchozí), 'checkbox')</li>
           <li><code>onSelectionChange</code> (volitelné) - Callback při změně výběru (obdrží pole vybraných id)</li>
         </ul>
       </section>
@@ -143,7 +143,6 @@ const handleSelectionChange = (selectedIds: number[]) => {
             value={selectedMode}
             onChange={handleModeChange}
           >
-            <option value="none">Žádný</option>
             <option value="single">Jednoduchý výběr</option>
             <option value="checkbox">Vícenásobný výběr</option>
           </select>
