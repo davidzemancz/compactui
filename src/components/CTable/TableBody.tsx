@@ -59,7 +59,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                 title={column.dataType === 'link' ? String(row[column.key] || '') : String(row[column.key] || '')}
               >
                 {column.dataType === 'bool' ? (
-                  <div className="flex justify-center">
+                  <div className="flex justify-center relative" style={{ zIndex: 1 }}>
                     <input
                       type="checkbox"
                       checked={Boolean(row[column.key])}
@@ -74,7 +74,21 @@ const TableBody: React.FC<TableBodyProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (onLinkClicked) onLinkClicked(rowId, column.key, row[column.key]);
+                      
+                      // Always select the row first before link action
+                      // Use direct selection rather than toggling
+                      if (selectionMode === 'single') {
+                        // For single selection mode, just select this row
+                        onSelectRow(rowId);
+                      } else if (selectionMode === 'multi' && !isSelected) {
+                        // For multi-selection, only add to selection if not already selected
+                        onSelectRow(rowId, true);
+                      }
+                      
+                      // After ensuring selection, trigger the link clicked callback
+                      if (onLinkClicked) {
+                        onLinkClicked(rowId, column.key, row[column.key]);
+                      }
                     }}
                   >
                     {column.linkText || row[column.key]}

@@ -112,7 +112,7 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     <thead>
       <tr>
         {selectionMode === 'multi' && (
-          <th className="w-10 p-2 bg-gray-50 sticky top-0">
+          <th className="w-10 p-2 bg-gray-50 sticky top-0 z-20">
             <div className="flex items-center justify-center">
               <input
                 ref={checkboxRef}
@@ -125,12 +125,12 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
           </th>
         )}
         {selectionMode === 'single' && (
-          <th className="w-10 p-2 bg-gray-50 sticky top-0"></th>
+          <th className="w-10 p-2 bg-gray-50 sticky top-0 z-20"></th>
         )}
         {orderedColumns.map((column, index) => (
           <th 
             key={column.key} 
-            className="p-2 bg-gray-50 text-gray-700 font-medium border-b border-gray-300 sticky top-0 relative hover:bg-gray-100 cursor-pointer transition-colors"
+            className="p-2 bg-gray-50 text-gray-700 font-medium border-b border-gray-300 sticky top-0 relative hover:bg-gray-100 cursor-pointer transition-colors z-20"
             style={{ 
               textAlign: getAlignmentType(column.dataType) as any,
               width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,
@@ -149,12 +149,12 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
               dragOverItem.current = null;
             }}
           >
-            <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+            <div className="overflow-hidden text-ellipsis whitespace-nowrap relative z-20">
               {column.header}
               {getSortIndicator(column.key)}
             </div>
             <div
-              className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-blue-500 active:bg-blue-500"
+              className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-blue-500 active:bg-blue-500 z-25"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => handleResizeStart(e, column.key)}
             />

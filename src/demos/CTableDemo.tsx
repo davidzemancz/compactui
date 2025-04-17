@@ -66,8 +66,8 @@ const CTableDemo: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="bg-white rounded shadow p-3">
+    <div className="h-full flex flex-col">
+      <div className="bg-white rounded shadow p-3 mb-3">
         <h1 className="text-lg font-semibold mb-2 text-gray-800">Data Table Component</h1>
         
         <div className="mb-3">
@@ -83,7 +83,9 @@ const CTableDemo: React.FC = () => {
             </select>
           </div>
         </div>
-        
+      </div>
+      
+      <div className="flex-1 overflow-hidden">
         <CTable 
           columns={columns} 
           data={users}
@@ -93,7 +95,6 @@ const CTableDemo: React.FC = () => {
           storageKey="demo-table"
         />
       </div>
-     
     </div>
   );
 };

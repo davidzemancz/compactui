@@ -328,8 +328,8 @@ const CTable: React.FC<CTableProps> = ({
   }, [data, searchTerm, sortConfig, columns]);
 
   return (
-    <div className="bg-white rounded shadow-md overflow-visible w-full text-xs">
-      <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200">
+    <div className="bg-white rounded shadow-md overflow-hidden w-full h-full flex flex-col text-xs">
+      <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200 flex-shrink-0 relative z-30">
         <div className="relative w-60">
           <input
             type="text"
@@ -353,7 +353,7 @@ const CTable: React.FC<CTableProps> = ({
             </button>
             
             {menuOpen && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 py-1 text-xs border border-gray-200">
+              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1 text-xs border border-gray-200">
                 <button
                   className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                   onClick={handleReset}
@@ -367,7 +367,7 @@ const CTable: React.FC<CTableProps> = ({
         )}
       </div>
       
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+      <div className="overflow-x-auto overflow-y-auto flex-1 relative">
         <table className="min-w-max w-auto text-xs">
           <TableHeader 
             columns={columns}
