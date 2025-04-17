@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 // Types
-export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool';
+export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool' | 'datetime';
 export type SortDirection = 'asc' | 'desc' | null;
 export type SelectionMode = 'single' | 'checkbox';
 
@@ -10,6 +10,7 @@ export interface Column {
   header: string;
   dataType?: ColumnDataType;
   sortable?: boolean;
+  dateFormat?: string; // Format for datetime columns
 }
 
 export interface CTableProps {
@@ -20,7 +21,7 @@ export interface CTableProps {
 }
 
 // Utility functions
-const formatCellValue = (value: any, dataType?: ColumnDataType): React.ReactNode => {
+const formatCellValue = (value: any, dataType?: ColumnDataType, dateFormat?: string): React.ReactNode => {
   if (value === undefined || value === null) return '';
   
   switch (dataType) {
@@ -37,10 +38,42 @@ const formatCellValue = (value: any, dataType?: ColumnDataType): React.ReactNode
       return Number.isInteger(value) ? value.toString() : value;
     case 'decimal':
       return typeof value === 'number' ? value.toFixed(2) : value;
+    case 'datetime':
+      try {
+        // Parse the datetime string
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return value; // Return original value if parsing fails
+        }
+        
+        // Format the date according to provided format or default format
+        const format = dateFormat || 'dd.MM.yyyy HH:mm';
+        return formatDate(date, format);
+      } catch (error) {
+        return value; // Return original value if formatting fails
+      }
     case 'string':
     default:
       return value.toString();
   }
+};
+
+// Helper function to format date according to format string
+const formatDate = (date: Date, format: string): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  
+  return format
+    .replace('dd', day)
+    .replace('MM', month)
+    .replace('yyyy', year.toString())
+    .replace('HH', hours)
+    .replace('mm', minutes)
+    .replace('ss', seconds);
 };
 
 // Header component
@@ -237,7 +270,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                 key={`${rowId}-${column.key}`}
                 style={{ textAlign: getAlignmentType(column.dataType) as any }}
               >
-                {formatCellValue(row[column.key], column.dataType)}
+                {formatCellValue(row[column.key], column.dataType, column.dateFormat)}
               </td>
             ))}
           </tr>
@@ -373,6 +406,38 @@ export const CTable: React.FC<CTableProps> = ({
           break;
         case 'bool':
           comparison = (aValue === bValue) ? 0 : aValue ? 1 : -1;
+          break;
+        case 'datetime':
+          try {
+            // Expect input format: 'yyyy-MM-dd HH:mm:ss'
+            // Parse dates manually for consistent results
+            const parseDate = (dateStr: string): Date => {
+              const [datePart = '', timePart = ''] = dateStr.split(' ');
+              const [year = '0', month = '0', day = '0'] = datePart.split('-');
+              const [hours = '0', minutes = '0', seconds = '0'] = timePart.split(':');
+              
+              return new Date(
+                parseInt(year, 10),
+                parseInt(month, 10) - 1, // Month is 0-indexed in JS Date
+                parseInt(day, 10),
+                parseInt(hours, 10),
+                parseInt(minutes, 10),
+                parseInt(seconds, 10)
+              );
+            };
+            
+            const dateA = parseDate(String(aValue));
+            const dateB = parseDate(String(bValue));
+            
+            if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+              comparison = dateA.getTime() - dateB.getTime();
+            } else {
+              comparison = String(aValue).localeCompare(String(bValue));
+            }
+          } catch (error) {
+            // Fallback to string comparison if date parsing fails
+            comparison = String(aValue).localeCompare(String(bValue));
+          }
           break;
         default:
           comparison = String(aValue).localeCompare(String(bValue));

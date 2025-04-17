@@ -8,6 +8,8 @@ interface User {
   role: string;
   active: boolean;
   salary: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Helper function to generate random user data
@@ -27,7 +29,15 @@ const generateUsers = (count: number): User[] => {
     const active = Math.random() > 0.3; // 70% chance of being active
     const salary = Math.round(50000 + Math.random() * 50000 * 100) / 100; // Random salary between 50k and 100k
     
-    return { id, name, email, role, active, salary };
+    // Generate random dates within the last year
+    const now = new Date();
+    const createdDate = new Date(now.getTime() - Math.random() * 365 * 24 * 60 * 60 * 1000);
+    const updatedDate = new Date(createdDate.getTime() + Math.random() * (now.getTime() - createdDate.getTime()));
+    
+    const createdAt = createdDate.toISOString().slice(0, 19).replace('T', ' ');
+    const updatedAt = updatedDate.toISOString().slice(0, 19).replace('T', ' ');
+    
+    return { id, name, email, role, active, salary, createdAt, updatedAt };
   });
 };
 
@@ -39,7 +49,9 @@ const CTableDemo: React.FC = () => {
     { key: 'email', header: 'Email', dataType: 'string', sortable: true },
     { key: 'role', header: 'Role', dataType: 'string', sortable: true },
     { key: 'active', header: 'Status', dataType: 'bool', sortable: true },
-    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true }
+    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true },
+    { key: 'createdAt', header: 'Created', dataType: 'datetime', sortable: true },
+    { key: 'updatedAt', header: 'Updated', dataType: 'datetime', sortable: true, dateFormat: 'yyyy-MM-dd HH:mm:ss' }
   ];
 
   // Generate users once and memoize the result
