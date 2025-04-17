@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 
 // Types
 export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool';
@@ -17,10 +17,9 @@ export interface CTableProps {
   data: any[];
   selectionMode?: SelectionMode;
   onSelectionChange?: (selectedIds: any[]) => void;
-  idField?: string;
 }
 
-// Helper functions
+// Utility functions
 const formatCellValue = (value: any, dataType?: ColumnDataType): string => {
   if (value === undefined || value === null) return '';
   
@@ -49,18 +48,14 @@ const getAlignmentByDataType = (dataType?: ColumnDataType): React.CSSProperties 
   }
 };
 
-// Sub-components
+// Header component
 interface TableHeaderProps {
   columns: Column[];
-  sortConfig: {
-    key: string;
-    direction: SortDirection;
-  };
+  sortConfig: { key: string; direction: SortDirection };
   onSort: (key: string) => void;
   selectionMode: SelectionMode;
   selectedIds: any[];
   data: any[];
-  idField: string;
   onSelectAll: (selected: boolean) => void;
 }
 
@@ -71,7 +66,6 @@ const TableHeader: React.FC<TableHeaderProps> = ({
   selectionMode, 
   selectedIds, 
   data, 
-  idField, 
   onSelectAll 
 }) => {
   const getSortIndicator = (columnKey: string): string => {
@@ -80,6 +74,15 @@ const TableHeader: React.FC<TableHeaderProps> = ({
   };
 
   const allSelected = data.length > 0 && selectedIds.length === data.length;
+  const someSelected = selectedIds.length > 0 && selectedIds.length < data.length;
+  
+  const checkboxRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = someSelected;
+    }
+  }, [someSelected]);
   
   return (
     <thead>
@@ -87,6 +90,7 @@ const TableHeader: React.FC<TableHeaderProps> = ({
         {selectionMode === 'checkbox' && (
           <th style={{ width: '40px', textAlign: 'center' }}>
             <input
+              ref={checkboxRef}
               type="checkbox"
               checked={allSelected}
               onChange={(e) => onSelectAll(e.target.checked)}
@@ -111,12 +115,12 @@ const TableHeader: React.FC<TableHeaderProps> = ({
   );
 };
 
+// Body component
 interface TableBodyProps {
   columns: Column[];
   data: any[];
   selectionMode: SelectionMode;
   selectedIds: any[];
-  idField: string;
   onSelectRow: (id: any, selected?: boolean) => void;
 }
 
@@ -125,13 +129,12 @@ const TableBody: React.FC<TableBodyProps> = ({
   data, 
   selectionMode, 
   selectedIds, 
-  idField, 
   onSelectRow 
 }) => {
   return (
     <tbody>
       {data.map((row) => {
-        const rowId = row[idField];
+        const rowId = row.id;
         const isSelected = selectedIds.includes(rowId);
         
         return (
@@ -173,8 +176,7 @@ export const CTable: React.FC<CTableProps> = ({
   columns, 
   data,
   selectionMode = 'none',
-  onSelectionChange,
-  idField = 'id'
+  onSelectionChange
 }) => {
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -183,6 +185,7 @@ export const CTable: React.FC<CTableProps> = ({
   
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
 
+  // Sorting handlers
   const handleSort = (key: string) => {
     const column = columns.find(col => col.key === key);
     if (!column?.sortable) return;
@@ -198,6 +201,39 @@ export const CTable: React.FC<CTableProps> = ({
     });
   };
 
+  // Selection handlers  
+  const handleSelectRow = (id: any, selected?: boolean) => {
+    if (selectionMode === 'single') {
+      const newSelectedIds = [id];
+      setSelectedIds(newSelectedIds);
+      onSelectionChange?.(newSelectedIds);
+    } else if (selectionMode === 'checkbox') {
+      let newSelectedIds: any[];
+      
+      if (selected === undefined) {
+        // Toggle selection
+        newSelectedIds = selectedIds.includes(id) 
+          ? selectedIds.filter(selId => selId !== id)
+          : [...selectedIds, id];
+      } else {
+        // Explicit selection state
+        newSelectedIds = selected
+          ? [...selectedIds.filter(selId => selId !== id), id]
+          : selectedIds.filter(selId => selId !== id);
+      }
+      
+      setSelectedIds(newSelectedIds);
+      onSelectionChange?.(newSelectedIds);
+    }
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    const newSelectedIds = selected ? sortedData.map(row => row.id) : [];
+    setSelectedIds(newSelectedIds);
+    onSelectionChange?.(newSelectedIds);
+  };
+
+  // Compute sorted data
   const sortedData = useMemo(() => {
     if (!sortConfig.direction) return [...data];
 
@@ -231,40 +267,9 @@ export const CTable: React.FC<CTableProps> = ({
     });
   }, [data, sortConfig, columns]);
 
-  const handleSelectRow = (id: any, selected?: boolean) => {
-    if (selectionMode === 'single') {
-      const newSelectedIds = [id];
-      setSelectedIds(newSelectedIds);
-      onSelectionChange?.(newSelectedIds);
-    } else if (selectionMode === 'checkbox') {
-      let newSelectedIds: any[];
-      
-      if (selected === undefined) {
-        // Toggle selection
-        newSelectedIds = selectedIds.includes(id) 
-          ? selectedIds.filter(selId => selId !== id)
-          : [...selectedIds, id];
-      } else {
-        // Explicit selection state
-        newSelectedIds = selected
-          ? [...selectedIds.filter(selId => selId !== id), id]
-          : selectedIds.filter(selId => selId !== id);
-      }
-      
-      setSelectedIds(newSelectedIds);
-      onSelectionChange?.(newSelectedIds);
-    }
-  };
-
-  const handleSelectAll = (selected: boolean) => {
-    const newSelectedIds = selected ? sortedData.map(row => row[idField]) : [];
-    setSelectedIds(newSelectedIds);
-    onSelectionChange?.(newSelectedIds);
-  };
-
   return (
-    <div>
-      <table >
+    <div className="ctable-wrapper">
+      <table className="ctable">
         <TableHeader 
           columns={columns} 
           sortConfig={sortConfig} 
@@ -272,7 +277,6 @@ export const CTable: React.FC<CTableProps> = ({
           selectionMode={selectionMode}
           selectedIds={selectedIds}
           data={sortedData}
-          idField={idField}
           onSelectAll={handleSelectAll}
         />
         <TableBody 
@@ -280,7 +284,6 @@ export const CTable: React.FC<CTableProps> = ({
           data={sortedData}
           selectionMode={selectionMode}
           selectedIds={selectedIds}
-          idField={idField}
           onSelectRow={handleSelectRow}
         />
       </table>
