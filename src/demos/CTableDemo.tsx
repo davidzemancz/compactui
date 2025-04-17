@@ -43,18 +43,18 @@ const generateUsers = (count: number): User[] => {
 const CTableDemo: React.FC = () => {
   // Sample columns configuration
   const columns: Column[] = [
-    { key: 'id', header: 'ID', dataType: 'int', sortable: true },
-    { key: 'name', header: 'Name', dataType: 'string', sortable: true },
-    { key: 'email', header: 'Email', dataType: 'string', sortable: true },
-    { key: 'role', header: 'Role', dataType: 'string', sortable: true },
-    { key: 'active', header: 'Status', dataType: 'bool', sortable: true },
-    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true },
-    { key: 'createdAt', header: 'Created', dataType: 'datetime', sortable: true },
-    { key: 'updatedAt', header: 'Updated', dataType: 'datetime', sortable: true, dateFormat: 'yyyy-MM-dd HH:mm:ss' }
+    { key: 'id', header: 'ID', dataType: 'int', sortable: true, width: 60 },
+    { key: 'name', header: 'Name', dataType: 'string', sortable: true, width: 150 },
+    { key: 'email', header: 'Email', dataType: 'string', sortable: true, width: 200 },
+    { key: 'role', header: 'Role', dataType: 'string', sortable: true, width: 120 },
+    { key: 'active', header: 'Status', dataType: 'bool', sortable: true, width: 80 },
+    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true, width: 100 },
+    { key: 'createdAt', header: 'Created', dataType: 'datetime', sortable: true, width: 150 },
+    { key: 'updatedAt', header: 'Updated', dataType: 'datetime', sortable: true, dateFormat: 'yyyy-MM-dd HH:mm:ss', width: 180 }
   ];
 
   // Generate users once and memoize the result
-  const users = useMemo(() => generateUsers(1000), []);
+  const users = useMemo(() => generateUsers(100), []);
 
   const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -81,6 +81,7 @@ const CTableDemo: React.FC = () => {
         
         <div style={{ marginTop: '0.5rem', fontSize: '0.9em', color: '#666' }}>
           Pro změnu pořadí sloupců přetáhněte záhlaví sloupce na novou pozici.
+          Pro změnu šířky sloupce táhněte za pravý okraj záhlaví.
         </div>
       </div>
       

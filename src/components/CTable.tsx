@@ -11,6 +11,7 @@ export interface Column {
   dataType?: ColumnDataType;
   sortable?: boolean;
   dateFormat?: string;
+  width?: number;
 }
 
 export interface CTableProps {
@@ -81,12 +82,15 @@ interface TableHeaderProps {
   onSelectAll: (selected: boolean) => void;
   columnOrder: string[];
   onColumnReorder: (dragIndex: number, hoverIndex: number) => void;
+  columnWidths: Record<string, number>;
+  onColumnResize: (columnKey: string, width: number) => void;
 }
 
 const TableHeader: React.FC<TableHeaderProps> = (props) => {
   const { 
     columns, sortConfig, onSort, selectionMode, 
-    selectedIds, data, onSelectAll, columnOrder, onColumnReorder 
+    selectedIds, data, onSelectAll, columnOrder, 
+    onColumnReorder, columnWidths, onColumnResize 
   } = props;
   
   const checkboxRef = useRef<HTMLInputElement>(null);
@@ -127,6 +131,46 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     }
   };
   
+  const handleResizeStart = (e: React.MouseEvent, columnKey: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const startX = e.clientX;
+    const startWidth = columnWidths[columnKey] || 100;
+    
+    // Flag to track if we're currently resizing
+    let isResizing = true;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = Math.max(50, startWidth + (moveEvent.clientX - startX));
+      onColumnResize(columnKey, newWidth);
+    };
+    
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      // Prevent the click event if we've been resizing
+      if (isResizing) {
+        isResizing = false;
+        
+        // Create a handler to block the next click event on this column
+        const blockNextClick = (clickEvent: MouseEvent) => {
+          clickEvent.stopPropagation();
+          // Remove this handler after it's executed once
+          document.removeEventListener('click', blockNextClick, true);
+        };
+        
+        // Add the handler to capture the next click event
+        document.addEventListener('click', blockNextClick, true);
+      }
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+  
   // Get columns in the order defined by columnOrder
   const orderedColumns = [...columns].sort((a, b) => 
     columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
@@ -136,7 +180,7 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     <thead>
       <tr>
         {selectionMode === 'checkbox' && (
-          <th>
+          <th style={{ width: '40px', minWidth: '40px' }}>
             <input
               ref={checkboxRef}
               type="checkbox"
@@ -151,7 +195,10 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
             style={{ 
               cursor: column.sortable ? 'pointer' : 'default',
               textAlign: getAlignmentType(column.dataType) as any,
-              userSelect: 'none'
+              userSelect: 'none',
+              position: 'relative',
+              width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,
+              minWidth: '50px'
             }}
             onClick={() => onSort(column.key)}
             draggable="true"
@@ -168,6 +215,19 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
           >
             {column.header}
             {getSortIndicator(column.key)}
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                height: '100%',
+                width: '5px',
+                cursor: 'col-resize',
+                zIndex: 1
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => handleResizeStart(e, column.key)}
+            />
           </th>
         ))}
       </tr>
@@ -248,10 +308,35 @@ export const CTable: React.FC<CTableProps> = ({
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    // Initialize column widths from column props
+    const initialWidths: Record<string, number> = {};
+    columns.forEach(col => {
+      if (col.width) {
+        initialWidths[col.key] = col.width;
+      }
+    });
+    return initialWidths;
+  });
   
   // Initialize column order when columns change
   useEffect(() => {
     setColumnOrder(columns.map(col => col.key));
+    
+    // Update column widths if new columns are provided with width
+    const newWidths = { ...columnWidths };
+    let widthsUpdated = false;
+    
+    columns.forEach(col => {
+      if (col.width && columnWidths[col.key] !== col.width) {
+        newWidths[col.key] = col.width;
+        widthsUpdated = true;
+      }
+    });
+    
+    if (widthsUpdated) {
+      setColumnWidths(newWidths);
+    }
   }, [columns]);
   
   // Sorting handler
@@ -306,6 +391,14 @@ export const CTable: React.FC<CTableProps> = ({
     newOrder.splice(dragIndex, 1);
     newOrder.splice(hoverIndex, 0, draggedItem);
     setColumnOrder(newOrder);
+  };
+
+  // Column width adjustment
+  const handleColumnResize = (columnKey: string, width: number) => {
+    setColumnWidths(prev => ({
+      ...prev,
+      [columnKey]: width
+    }));
   };
 
   // Filter and sort data
@@ -389,14 +482,14 @@ export const CTable: React.FC<CTableProps> = ({
       <div style={{ marginBottom: '10px' }}>
         <input
           type="text"
-          placeholder="Vyhledat..."
+          placeholder="Hledat v seznamu..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ width: '200px' }}
         />
       </div>
       
-      <table style={{ borderCollapse: 'collapse' }}>
+      <table style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <TableHeader 
           columns={columns}
           sortConfig={sortConfig}
@@ -407,6 +500,8 @@ export const CTable: React.FC<CTableProps> = ({
           onSelectAll={handleSelectAll}
           columnOrder={columnOrder}
           onColumnReorder={handleColumnReorder}
+          columnWidths={columnWidths}
+          onColumnResize={handleColumnResize}
         />
         <TableBody 
           columns={columns}
