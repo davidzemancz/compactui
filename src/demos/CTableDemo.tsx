@@ -61,28 +61,30 @@ const CTableDemo: React.FC = () => {
     <div>
       <h1>Komponenta CTable</h1>
       
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="selection-mode" style={{ marginRight: '0.5rem' }}>
-            Režim výběru:
-          </label>
-          <select 
-            id="selection-mode"
-            value={selectedMode}
-            onChange={handleModeChange}
-          >
-            <option value="single">Jednoduchý výběr</option>
-            <option value="checkbox">Vícenásobný výběr</option>
-          </select>
-          
-         
-        </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="selection-mode" style={{ marginRight: '0.5rem' }}>
+          Režim výběru:
+        </label>
+        <select 
+          id="selection-mode"
+          value={selectedMode}
+          onChange={handleModeChange}
+        >
+          <option value="single">Jednoduchý výběr</option>
+          <option value="checkbox">Vícenásobný výběr</option>
+        </select>
         
-        <CTable 
-          columns={columns} 
-          data={users}
-          selectionMode={selectedMode}
-          onSelectionChange={handleSelectionChange}
-        />
+        <div style={{ marginTop: '0.5rem', fontSize: '0.9em', color: '#666' }}>
+          Pro změnu pořadí sloupců přetáhněte záhlaví sloupce na novou pozici.
+        </div>
+      </div>
+      
+      <CTable 
+        columns={columns} 
+        data={users}
+        selectionMode={selectedMode}
+        onSelectionChange={handleSelectionChange}
+      />
     </div>
   );
 };

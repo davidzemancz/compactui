@@ -45,6 +45,8 @@ interface TableHeaderProps {
   selectedIds: any[];
   data: any[];
   onSelectAll: (selected: boolean) => void;
+  columnOrder: string[];
+  onColumnReorder: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const TableHeader: React.FC<TableHeaderProps> = ({ 
@@ -54,7 +56,9 @@ const TableHeader: React.FC<TableHeaderProps> = ({
   selectionMode, 
   selectedIds, 
   data, 
-  onSelectAll 
+  onSelectAll,
+  columnOrder,
+  onColumnReorder
 }) => {
   const getSortIndicator = (columnKey: string): string => {
     if (sortConfig.key !== columnKey || !sortConfig.direction) return '';
@@ -72,6 +76,50 @@ const TableHeader: React.FC<TableHeaderProps> = ({
     }
   }, [someSelected]);
   
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+  
+  const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>, index: number) => {
+    dragItem.current = index;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
+    e.currentTarget.style.opacity = '0.4';
+  };
+  
+  const handleDragOver = (e: React.DragEvent<HTMLTableCellElement>, index: number) => {
+    e.preventDefault();
+    dragOverItem.current = index;
+    e.dataTransfer.dropEffect = 'move';
+  };
+  
+  const handleDragEnter = (e: React.DragEvent<HTMLTableCellElement>) => {
+    e.currentTarget.style.backgroundColor = '#f5f5f5';
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLTableCellElement>) => {
+    e.currentTarget.style.backgroundColor = '';
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLTableCellElement>) => {
+    e.preventDefault();
+    e.currentTarget.style.backgroundColor = '';
+    
+    if (dragItem.current !== null && dragOverItem.current !== null && dragItem.current !== dragOverItem.current) {
+      onColumnReorder(dragItem.current, dragOverItem.current);
+    }
+  };
+  
+  const handleDragEnd = (e: React.DragEvent<HTMLTableCellElement>) => {
+    e.currentTarget.style.opacity = '1';
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+  
+  // Get columns in the order defined by columnOrder
+  const orderedColumns = [...columns].sort((a, b) => {
+    return columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key);
+  });
+  
   return (
     <thead>
       <tr>
@@ -85,14 +133,22 @@ const TableHeader: React.FC<TableHeaderProps> = ({
             />
           </th>
         )}
-        {columns.map((column) => (
+        {orderedColumns.map((column, index) => (
           <th 
-            key={column.key}
+            key={column.key} 
             style={{ 
               cursor: column.sortable ? 'pointer' : 'default',
-              textAlign: getAlignmentType(column.dataType) as any
+              textAlign: getAlignmentType(column.dataType) as any,
+              userSelect: 'none'
             }}
             onClick={() => onSort(column.key)}
+            draggable="true"
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
           >
             {column.header}
             {getSortIndicator(column.key)}
@@ -123,6 +179,7 @@ interface TableBodyProps {
   selectionMode: SelectionMode;
   selectedIds: any[];
   onSelectRow: (id: any, selected?: boolean) => void;
+  columnOrder: string[];
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ 
@@ -130,8 +187,14 @@ const TableBody: React.FC<TableBodyProps> = ({
   data, 
   selectionMode, 
   selectedIds, 
-  onSelectRow 
+  onSelectRow,
+  columnOrder
 }) => {
+  // Get columns in the order defined by columnOrder
+  const orderedColumns = [...columns].sort((a, b) => {
+    return columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key);
+  });
+  
   return (
     <tbody>
       {data.map((row) => {
@@ -162,7 +225,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                 />
               </td>
             )}
-            {columns.map((column) => (
+            {orderedColumns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}
                 style={{ textAlign: getAlignmentType(column.dataType) as any }}
@@ -191,6 +254,27 @@ export const CTable: React.FC<CTableProps> = ({
   
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // State to track column order
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  
+  // Initialize column order when columns change
+  useEffect(() => {
+    setColumnOrder(columns.map(col => col.key));
+  }, [columns]);
+  
+  // Handle column reordering
+  const handleColumnReorder = (dragIndex: number, hoverIndex: number) => {
+    const draggedColKey = columnOrder[dragIndex];
+    const newColumnOrder = [...columnOrder];
+    
+    // Remove dragged item
+    newColumnOrder.splice(dragIndex, 1);
+    // Add it at the new position
+    newColumnOrder.splice(hoverIndex, 0, draggedColKey);
+    
+    setColumnOrder(newColumnOrder);
+  };
 
   // Sorting handlers
   const handleSort = (key: string) => {
@@ -312,6 +396,8 @@ export const CTable: React.FC<CTableProps> = ({
           selectedIds={selectedIds}
           data={filteredAndSortedData}
           onSelectAll={handleSelectAll}
+          columnOrder={columnOrder}
+          onColumnReorder={handleColumnReorder}
         />
         <TableBody 
           columns={columns} 
@@ -319,6 +405,7 @@ export const CTable: React.FC<CTableProps> = ({
           selectionMode={selectionMode}
           selectedIds={selectedIds}
           onSelectRow={handleSelectRow}
+          columnOrder={columnOrder}
         />
       </table>
       
