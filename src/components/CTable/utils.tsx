@@ -23,7 +23,6 @@ export const formatCellValue = (
   
   switch (dataType) {
     case 'bool':
-      // This is now handled directly in the TableBody component for Tailwind styling
       return value ? 'Yes' : 'No';
     case 'int':
       return Number.isInteger(value) ? value.toString() : value;

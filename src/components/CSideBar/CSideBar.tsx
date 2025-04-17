@@ -21,19 +21,43 @@ interface CSideBarProps {
   };
 }
 
+// NavLink component for sidebar items with routes
+const NavLink: React.FC<{to: string, children: React.ReactNode, icon?: ReactNode, isCollapsed?: boolean}> = 
+  ({ to, children, icon, isCollapsed }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <Link 
+      to={to} 
+      className={`px-2 py-2 rounded text-xs font-medium flex ${isCollapsed ? 'justify-center' : 'items-center'} ${
+        isActive 
+          ? 'bg-blue-100 text-blue-700' 
+          : 'text-gray-600 hover:bg-gray-100'
+      }`}
+      title={isCollapsed ? String(children) : ''}
+    >
+      {icon && (
+        <span className={isCollapsed ? '' : 'mr-2'}>
+          {icon}
+        </span>
+      )}
+      {!isCollapsed && children}
+    </Link>
+  );
+};
+
 const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const location = useLocation();
   
-  // Auto-expand parent of active item on initial load
   useEffect(() => {
     const autoExpandParents = () => {
       const newExpandedItems: string[] = [...expandedItems];
       
       const findAndExpandParent = (items: SidebarItem[], path: string) => {
         for (const item of items) {
-          // Check if this item is the parent of an active item
           if (item.children && !item.to) {
             const hasActiveChild = item.children.some(child => 
               (child.to && child.to === path) || 
@@ -44,7 +68,6 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
               newExpandedItems.push(item.id);
             }
             
-            // Recursively check this item's children
             if (item.children) {
               findAndExpandParent(item.children, path);
             }
@@ -67,7 +90,7 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
     };
     
     autoExpandParents();
-  }, [location.pathname, items]);
+  }, [location.pathname, items, expandedItems]);
   
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -113,11 +136,11 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
             {!isCollapsed && hasChildren && (
               <span className="text-gray-400">
                 {isExpanded ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 )}
@@ -126,7 +149,6 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
           </div>
         )}
         
-        {/* Show children if parent is expanded regardless of sidebar collapsed state */}
         {hasChildren && isExpanded && (
           <div className={`${isCollapsed ? 'ml-0 mt-1' : 'ml-4 mt-1'}`}>
             {item.children!.map(child => renderNavItem(child, level + 1))}
@@ -145,11 +167,11 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
           className={`text-gray-500 hover:text-gray-700 focus:outline-none ${isCollapsed ? 'mx-auto' : ''}`}
         >
           {isCollapsed ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
           )}
@@ -177,32 +199,6 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
         </div>
       )}
     </aside>
-  );
-};
-
-// NavLink component for sidebar items with routes
-const NavLink: React.FC<{to: string, children: React.ReactNode, icon?: React.ReactNode, isCollapsed?: boolean}> = 
-  ({ to, children, icon, isCollapsed }) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  
-  return (
-    <Link 
-      to={to} 
-      className={`px-2 py-2 rounded text-xs font-medium flex ${isCollapsed ? 'justify-center' : 'items-center'} ${
-        isActive 
-          ? 'bg-blue-100 text-blue-700' 
-          : 'text-gray-600 hover:bg-gray-100'
-      }`}
-      title={isCollapsed ? String(children) : ''}
-    >
-      {icon && (
-        <span className={isCollapsed ? '' : 'mr-2'}>
-          {icon}
-        </span>
-      )}
-      {!isCollapsed && children}
-    </Link>
   );
 };
 

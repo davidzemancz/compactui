@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Column, SelectionMode } from '../components/CTable/types'; // Import types from the right path
+import { Column, SelectionMode } from '../components/CTable/types';
 import CTable from '../components/CTable/CTable';
 
 interface User {
@@ -57,12 +57,11 @@ const CTableDemo: React.FC = () => {
   // Generate users once and memoize the result
   const users = useMemo(() => generateUsers(100), []);
 
-  const [selectedMode, setSelectedMode] = useState<SelectionMode>('single'); // Change to 'single' or 'multi' as needed
+  const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const handleLinkClick = (rowId: any, columnKey: string, value: any) => {
     alert(`Link clicked: Row ID: ${rowId}, Column: ${columnKey}, Value: ${value}`);
-    // In a real app, you would likely navigate or perform some action
   };
 
   return (

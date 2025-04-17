@@ -328,26 +328,19 @@ const CTable: React.FC<CTableProps> = ({
     });
   }, [data, searchTerm, sortConfig, columns]);
 
-  // Function to export data to CSV
+  // Function to export data to CSV - organized and simplified
   const exportToCSV = () => {
-    // Close the menu first
     setMenuOpen(false);
     
-    // Get the visible and ordered columns
-    const visibleColumns = columns.sort((a, b) => 
+    const orderedColumns = columns.sort((a, b) => 
       columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
     );
     
-    // Create header row with column headers
-    const headerRow = visibleColumns.map(col => `"${col.header}"`).join(',');
+    const headerRow = orderedColumns.map(col => `"${col.header}"`).join(',');
     
-    // Create data rows
     const dataRows = filteredAndSortedData.map(row => {
-      return visibleColumns.map(column => {
-        // Get the raw value
+      return orderedColumns.map(column => {
         const value = row[column.key];
-        
-        // Format the value based on its data type, but keep it simple for CSV
         let formattedValue = '';
         
         if (value === null || value === undefined) {
@@ -357,31 +350,26 @@ const CTable: React.FC<CTableProps> = ({
         } else if (column.dataType === 'link') {
           formattedValue = String(value);
         } else {
-          // Use the formatCellValue function without React rendering
           const formatted = formatCellValue(value, column.dataType, column.dateFormat);
           formattedValue = String(formatted);
         }
         
-        // Escape double quotes and enclose in quotes to handle commas and special characters
         return `"${formattedValue.replace(/"/g, '""')}"`;
       }).join(',');
     }).join('\n');
     
-    // Combine header and data rows
     const csvContent = `${headerRow}\n${dataRows}`;
-    
-    // Create a Blob with the CSV content
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    
-    // Create a download link and trigger it
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+    
     link.setAttribute('href', url);
-    link.setAttribute('download', `table-export-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `export-${new Date().toISOString().slice(0, 10)}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up by releasing the object URL
   };
 
   return (

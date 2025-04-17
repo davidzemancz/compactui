@@ -52,3 +52,81 @@ export default tseslint.config({
   },
 })
 ```
+
+# CompactUI
+
+A lightweight, responsive UI component library for React applications.
+
+## Features
+
+- Modern, clean UI components built with React and Tailwind CSS
+- Focused on performance and usability
+- Fully typed with TypeScript
+- Responsive design works across devices
+- Accessible components
+
+## Components
+
+### CTable
+
+A versatile data table component with the following features:
+- Sorting
+- Filtering/search
+- Resizable columns
+- Reorderable columns
+- Single or multi-selection
+- CSV export
+- Persistent state (via localStorage)
+
+### CSideBar
+
+A collapsible sidebar navigation component:
+- Collapsible/expandable
+- Support for nested menu items
+- Active route highlighting
+- Icons support
+- Mobile-friendly
+
+## Installation
+
+```bash
+# If you're using npm
+npm install compactui
+
+# If you're using yarn
+yarn add compactui
+```
+
+## Usage Example
+
+```tsx
+import React from 'react';
+import { CTable } from 'compactui';
+
+const MyComponent = () => {
+  const columns = [
+    { key: 'id', header: 'ID', dataType: 'int' },
+    { key: 'name', header: 'Name', dataType: 'string' },
+    { key: 'email', header: 'Email', dataType: 'link' },
+  ];
+
+  const data = [
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+  ];
+
+  return (
+    <CTable 
+      columns={columns} 
+      data={data}
+      selectionMode="single"
+      onSelectionChange={(ids) => console.log('Selected:', ids)}
+      storageKey="my-table"
+    />
+  );
+};
+```
+
+## License
+
+MIT
