@@ -76,13 +76,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <footer className="bg-white shadow-inner mt-3 py-2">
-          <div className="mx-auto max-w-6xl px-3">
-            <p className="text-center text-gray-500 text-xs">
-              CompactUI &copy; {new Date().getFullYear()}
-            </p>
-          </div>
-        </footer>
+        {/* Footer has been removed */}
       </div>
     </BrowserRouter>
   );

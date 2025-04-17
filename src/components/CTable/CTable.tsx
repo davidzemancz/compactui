@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import { CTableProps, Column, SortDirection } from './types';
@@ -34,6 +34,8 @@ const CTable: React.FC<CTableProps> = ({
   
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   
   // Initialize state with data from localStorage if available
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
@@ -89,6 +91,20 @@ const CTable: React.FC<CTableProps> = ({
     return initialWidths;
   });
   
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuRef]);
+  
   // Save to localStorage when state changes
   useEffect(() => {
     if (storageKey) {
@@ -132,6 +148,9 @@ const CTable: React.FC<CTableProps> = ({
       localStorage.removeItem(`${storageKey}-order`);
       localStorage.removeItem(`${storageKey}-widths`);
     }
+    
+    // Close the menu
+    setMenuOpen(false);
   };
   
   // Ensure column order is updated when columns change
@@ -322,12 +341,29 @@ const CTable: React.FC<CTableProps> = ({
         </div>
         
         {storageKey && (
-          <button 
-            className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
-            onClick={handleReset}
-          >
-            Obnovit výchozí zobrazení
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button 
+              className="p-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Table options"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+            
+            {menuOpen && (
+              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 py-1 text-xs border border-gray-200">
+                <button
+                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={handleReset}
+                >
+                  Obnovit výchozí zobrazení
+                </button>
+                {/* Add more menu items as needed */}
+              </div>
+            )}
+          </div>
         )}
       </div>
       

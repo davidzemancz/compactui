@@ -70,18 +70,6 @@ const CTableDemo: React.FC = () => {
       <div className="bg-white rounded shadow p-3">
         <h1 className="text-lg font-semibold mb-2 text-gray-800">Data Table Component</h1>
         
-        <div className="mb-3 bg-blue-50 p-2 rounded border border-blue-200">
-          <h2 className="text-xs font-medium text-blue-800 mb-1">Component Features</h2>
-          <ul className="list-disc pl-4 text-xs text-blue-700 space-y-0.5">
-            <li>Sortable columns (click header to sort)</li>
-            <li>Resizable columns (drag column edges)</li>
-            <li>Reorderable columns (drag and drop headers)</li>
-            <li>Multi or single-row selection</li>
-            <li>Search functionality</li>
-            <li>Persistent state with localStorage</li>
-          </ul>
-        </div>
-        
         <div className="mb-3">
           <div className="flex items-center space-x-2 mb-1">
             <span className="text-xs font-medium text-gray-700">Selection Mode:</span>
@@ -94,12 +82,6 @@ const CTableDemo: React.FC = () => {
               <option value="multi">Multi Selection</option>
             </select>
           </div>
-          
-          {selectedIds.length > 0 && (
-            <div className="bg-gray-50 p-1.5 rounded text-xs mb-2">
-              <span className="font-medium">Selected IDs:</span> {selectedIds.join(', ')}
-            </div>
-          )}
         </div>
         
         <CTable 
@@ -111,22 +93,7 @@ const CTableDemo: React.FC = () => {
           storageKey="demo-table"
         />
       </div>
-      
-      <div className="bg-white rounded shadow p-3">
-        <h2 className="text-sm font-medium mb-1 text-gray-800">Component Code</h2>
-        <div className="bg-gray-50 p-2 rounded border border-gray-200 overflow-x-auto">
-          <pre className="text-xs text-gray-700">
-{`<CTable 
-  columns={columns} 
-  data={users}
-  selectionMode="${selectedMode}"
-  onSelectionChange={setSelectedIds}
-  onLinkClicked={handleLinkClick}
-  storageKey="demo-table"
-/>`}
-          </pre>
-        </div>
-      </div>
+     
     </div>
   );
 };
