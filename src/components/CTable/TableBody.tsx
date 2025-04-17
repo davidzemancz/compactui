@@ -64,7 +64,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                       type="checkbox"
                       checked={Boolean(row[column.key])}
                       readOnly
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-60 cursor-not-allowed"
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-60 cursor-default"
                     />
                   </div>
                 ) : column.dataType === 'link' ? (
