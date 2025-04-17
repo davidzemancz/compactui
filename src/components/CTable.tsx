@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import './CTable.css';
 
 // Types
 export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool' | 'datetime';
@@ -19,6 +20,8 @@ export interface CTableProps {
   data: any[];
   selectionMode?: SelectionMode;
   onSelectionChange?: (selectedIds: any[]) => void;
+  storageKey?: string; // Add storage key for persisting state
+  compact?: boolean; // Add compact prop option
 }
 
 // Utility functions
@@ -27,7 +30,12 @@ const formatCellValue = (value: any, dataType?: ColumnDataType, dateFormat?: str
   
   switch (dataType) {
     case 'bool':
-      return <input type="checkbox" checked={Boolean(value)} readOnly style={{ cursor: 'default' }} />;
+      return (
+        <label className="ctable-checkbox readonly-checkbox">
+          <input type="checkbox" checked={Boolean(value)} readOnly />
+          <span className="checkmark"></span>
+        </label>
+      );
     case 'int':
       return Number.isInteger(value) ? value.toString() : value;
     case 'decimal':
@@ -143,7 +151,8 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!isResizing) return;
-      const newWidth = Math.max(50, startWidth + (moveEvent.clientX - startX));
+      // Remove minimum width constraint, allow any width
+      const newWidth = Math.max(10, startWidth + (moveEvent.clientX - startX));
       onColumnResize(columnKey, newWidth);
     };
     
@@ -180,31 +189,32 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     <thead>
       <tr>
         {selectionMode === 'checkbox' && (
-          <th style={{ width: '40px', minWidth: '40px' }}>
-            <input
-              ref={checkboxRef}
-              type="checkbox"
-              checked={allSelected}
-              onChange={(e) => onSelectAll(e.target.checked)}
-            />
+          <th className="checkbox-cell">
+            <label className="ctable-checkbox">
+              <input
+                ref={checkboxRef}
+                type="checkbox"
+                checked={allSelected}
+                onChange={(e) => onSelectAll(e.target.checked)}
+              />
+              <span className="checkmark"></span>
+            </label>
           </th>
         )}
         {orderedColumns.map((column, index) => (
           <th 
             key={column.key} 
+            className={column.sortable ? 'sortable' : ''}
             style={{ 
-              cursor: column.sortable ? 'pointer' : 'default',
               textAlign: getAlignmentType(column.dataType) as any,
-              userSelect: 'none',
-              position: 'relative',
               width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,
-              minWidth: '50px'
+              maxWidth: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,
             }}
             onClick={() => onSort(column.key)}
             draggable="true"
             onDragStart={(e) => handleDragStart(e, index)}
             onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+            onDragEnter={(e) => e.currentTarget.style.backgroundColor = '#e8f0fe'}
             onDragLeave={(e) => e.currentTarget.style.backgroundColor = ''}
             onDrop={handleDrop}
             onDragEnd={(e) => {
@@ -213,18 +223,12 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
               dragOverItem.current = null;
             }}
           >
-            {column.header}
-            {getSortIndicator(column.key)}
+            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {column.header}
+              {getSortIndicator(column.key)}
+            </div>
             <div
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                height: '100%',
-                width: '5px',
-                cursor: 'col-resize',
-                zIndex: 1
-              }}
+              className="resize-handle"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => handleResizeStart(e, column.key)}
             />
@@ -261,29 +265,33 @@ const TableBody: React.FC<TableBodyProps> = ({
         return (
           <tr 
             key={rowId}
-            style={{ backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined }}
+            className={isSelected ? 'selected' : ''}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
             {selectionMode === 'checkbox' && (
               <td 
-                style={{ textAlign: 'center', cursor: 'pointer' }}
+                className="checkbox-cell"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectRow(rowId, !isSelected);
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={(e) => onSelectRow(rowId, e.target.checked)}
-                  onClick={(e) => e.stopPropagation()}
-                />
+                <label className="ctable-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => onSelectRow(rowId, e.target.checked)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <span className="checkmark"></span>
+                </label>
               </td>
             )}
             {orderedColumns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}
                 style={{ textAlign: getAlignmentType(column.dataType) as any }}
+                title={String(row[column.key] || '')}
               >
                 {formatCellValue(row[column.key], column.dataType, column.dateFormat)}
               </td>
@@ -300,16 +308,79 @@ export const CTable: React.FC<CTableProps> = ({
   columns, 
   data,
   selectionMode = 'single',
-  onSelectionChange
+  onSelectionChange,
+  storageKey,
+  compact = true  // Default to compact mode
 }) => {
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>({ 
-    key: '', direction: null 
+  // Initialize sort config with data from localStorage if available
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
+    if (storageKey) {
+      const savedSort = localStorage.getItem(`${storageKey}-sort`);
+      if (savedSort) {
+        try {
+          const parsed = JSON.parse(savedSort);
+          // Verify the column exists and is sortable
+          const column = columns.find(col => col.key === parsed.key);
+          if (column?.sortable && 
+             (parsed.direction === 'asc' || parsed.direction === 'desc' || parsed.direction === null)) {
+            return parsed;
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved sort configuration', e);
+        }
+      }
+    }
+    return { key: '', direction: null };
   });
+  
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  
+  // Initialize state with data from localStorage if available
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+    if (storageKey) {
+      const savedOrder = localStorage.getItem(`${storageKey}-order`);
+      if (savedOrder) {
+        try {
+          const parsed = JSON.parse(savedOrder);
+          // Verify all columns exist in the saved order
+          const allColumnsIncluded = columns.every(col => parsed.includes(col.key));
+          if (allColumnsIncluded && parsed.length === columns.length) {
+            return parsed;
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved column order', e);
+        }
+      }
+    }
+    return columns.map(col => col.key);
+  });
+  
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
-    // Initialize column widths from column props
+    // Try to load from localStorage first
+    if (storageKey) {
+      const savedWidths = localStorage.getItem(`${storageKey}-widths`);
+      if (savedWidths) {
+        try {
+          const parsed = JSON.parse(savedWidths);
+          // Merge saved widths with default widths
+          const mergedWidths: Record<string, number> = {};
+          columns.forEach(col => {
+            if (col.width) {
+              mergedWidths[col.key] = col.width;
+            }
+            if (parsed[col.key]) {
+              mergedWidths[col.key] = parsed[col.key];
+            }
+          });
+          return mergedWidths;
+        } catch (e) {
+          console.warn('Failed to parse saved column widths', e);
+        }
+      }
+    }
+    
+    // Initialize with default widths from column props
     const initialWidths: Record<string, number> = {};
     columns.forEach(col => {
       if (col.width) {
@@ -319,16 +390,67 @@ export const CTable: React.FC<CTableProps> = ({
     return initialWidths;
   });
   
-  // Initialize column order when columns change
+  // Save to localStorage when state changes
   useEffect(() => {
-    setColumnOrder(columns.map(col => col.key));
+    if (storageKey) {
+      localStorage.setItem(`${storageKey}-sort`, JSON.stringify(sortConfig));
+    }
+  }, [sortConfig, storageKey]);
+  
+  useEffect(() => {
+    if (storageKey && columnOrder.length > 0) {
+      localStorage.setItem(`${storageKey}-order`, JSON.stringify(columnOrder));
+    }
+  }, [columnOrder, storageKey]);
+  
+  useEffect(() => {
+    if (storageKey && Object.keys(columnWidths).length > 0) {
+      localStorage.setItem(`${storageKey}-widths`, JSON.stringify(columnWidths));
+    }
+  }, [columnWidths, storageKey]);
+  
+  // Reset state to defaults
+  const handleReset = () => {
+    // Reset sort configuration
+    setSortConfig({ key: '', direction: null });
+    
+    // Reset column order
+    const defaultOrder = columns.map(col => col.key);
+    setColumnOrder(defaultOrder);
+    
+    // Reset column widths
+    const defaultWidths: Record<string, number> = {};
+    columns.forEach(col => {
+      if (col.width) {
+        defaultWidths[col.key] = col.width;
+      }
+    });
+    setColumnWidths(defaultWidths);
+    
+    // Clear localStorage if applicable
+    if (storageKey) {
+      localStorage.removeItem(`${storageKey}-sort`);
+      localStorage.removeItem(`${storageKey}-order`);
+      localStorage.removeItem(`${storageKey}-widths`);
+    }
+  };
+  
+  // Ensure column order is updated when columns change
+  useEffect(() => {
+    // Check if we need to update the column order
+    const allColumnsInOrder = columns.every(col => columnOrder.includes(col.key));
+    const noExtraColumns = columnOrder.every(key => columns.some(col => col.key === key));
+    
+    if (!allColumnsInOrder || !noExtraColumns) {
+      setColumnOrder(columns.map(col => col.key));
+    }
     
     // Update column widths if new columns are provided with width
     const newWidths = { ...columnWidths };
     let widthsUpdated = false;
     
     columns.forEach(col => {
-      if (col.width && columnWidths[col.key] !== col.width) {
+      if (col.width && !columnWidths[col.key]) {
         newWidths[col.key] = col.width;
         widthsUpdated = true;
       }
@@ -478,43 +600,55 @@ export const CTable: React.FC<CTableProps> = ({
   }, [data, searchTerm, sortConfig, columns]);
 
   return (
-    <div>
-      <div style={{ marginBottom: '10px' }}>
-        <input
-          type="text"
-          placeholder="Hledat v seznamu..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '200px' }}
-        />
+    <div className="ctable-container">
+      <div className="ctable-toolbar">
+        <div className="ctable-search">
+          <input
+            type="text"
+            placeholder="Hledat v seznamu..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        {storageKey && (
+          <button 
+            className="ctable-reset-button"
+            onClick={handleReset}
+          >
+            Obnovit výchozí zobrazení
+          </button>
+        )}
       </div>
       
-      <table style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-        <TableHeader 
-          columns={columns}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-          selectionMode={selectionMode}
-          selectedIds={selectedIds}
-          data={filteredAndSortedData}
-          onSelectAll={handleSelectAll}
-          columnOrder={columnOrder}
-          onColumnReorder={handleColumnReorder}
-          columnWidths={columnWidths}
-          onColumnResize={handleColumnResize}
-        />
-        <TableBody 
-          columns={columns}
-          data={filteredAndSortedData}
-          selectionMode={selectionMode}
-          selectedIds={selectedIds}
-          onSelectRow={handleSelectRow}
-          columnOrder={columnOrder}
-        />
-      </table>
+      <div className="ctable-wrapper">
+        <table className={`ctable ${compact ? 'compact' : ''}`}>
+          <TableHeader 
+            columns={columns}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            data={filteredAndSortedData}
+            onSelectAll={handleSelectAll}
+            columnOrder={columnOrder}
+            onColumnReorder={handleColumnReorder}
+            columnWidths={columnWidths}
+            onColumnResize={handleColumnResize}
+          />
+          <TableBody 
+            columns={columns}
+            data={filteredAndSortedData}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onSelectRow={handleSelectRow}
+            columnOrder={columnOrder}
+          />
+        </table>
+      </div>
       
       {filteredAndSortedData.length === 0 && (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+        <div className="empty-message">
           Nebyla nalezena žádná data
         </div>
       )}

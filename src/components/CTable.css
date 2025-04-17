@@ -1,0 +1,220 @@
+.ctable-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.ctable-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ctable-search {
+  position: relative;
+  width: 240px;
+}
+
+.ctable-search input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ctable-search input:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 1px rgba(33, 150, 243, 0.2);
+  outline: none;
+}
+
+.ctable-reset-button {
+  color: #5f6368;
+  background-color: #f2f2f2;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ctable-reset-button:hover {
+  background-color: #e0e0e0;
+}
+
+.ctable-wrapper {
+  overflow-x: auto;
+  margin-bottom: 0;
+}
+
+.ctable {
+  border-collapse: collapse;
+  width: auto;
+  font-size: 13px;
+}
+
+.ctable th {
+  background-color: #fafafa;
+  color: #5f6368;
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.ctable th.sortable {
+  cursor: pointer;
+}
+
+.ctable th.sortable:hover {
+  background-color: #f0f0f0;
+}
+
+.ctable th .resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.ctable th .resize-handle:hover,
+.ctable th .resize-handle.active {
+  background-color: #2196f3;
+}
+
+.ctable tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.ctable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.ctable tbody tr.selected {
+  background-color: rgba(33, 150, 243, 0.08);
+}
+
+.ctable td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #f5f5f5;
+  line-height: 1.2;
+}
+
+.ctable td.checkbox-cell, 
+.ctable th.checkbox-cell {
+  width: 36px;
+  text-align: center;
+  padding: 6px;
+}
+
+.ctable .empty-message {
+  text-align: center;
+  padding: 16px;
+  color: #757575;
+  background-color: #fafafa;
+  font-style: italic;
+}
+
+/* Custom checkbox styling */
+.ctable-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.ctable-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 16px;
+  width: 16px;
+  background-color: #fff;
+  border: 2px solid #9e9e9e;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+.ctable-checkbox:hover input ~ .checkmark {
+  border-color: #2196f3;
+}
+
+.ctable-checkbox input:checked ~ .checkmark {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.ctable-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.ctable-checkbox .checkmark:after {
+  left: 5px;
+  top: 1px;
+  width: 3px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* For the read-only checkboxes in cells */
+.readonly-checkbox {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Striped rows for better readability in compact tables */
+.ctable tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+/* Compact mode specific adjustments */
+.ctable.compact th {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.ctable.compact td {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.ctable.compact .checkbox-cell {
+  width: 32px;
+  padding: 3px 6px;
+}

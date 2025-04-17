@@ -82,6 +82,7 @@ const CTableDemo: React.FC = () => {
         <div style={{ marginTop: '0.5rem', fontSize: '0.9em', color: '#666' }}>
           Pro změnu pořadí sloupců přetáhněte záhlaví sloupce na novou pozici.
           Pro změnu šířky sloupce táhněte za pravý okraj záhlaví.
+          Stav sloupců (pořadí a šířka) je automaticky uložen v prohlížeči.
         </div>
       </div>
       
@@ -90,6 +91,7 @@ const CTableDemo: React.FC = () => {
         data={users}
         selectionMode={selectedMode}
         onSelectionChange={setSelectedIds}
+        storageKey="demo-table" // Add storage key for persistence
       />
     </div>
   );
