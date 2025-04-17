@@ -57,7 +57,7 @@ const CTableDemo: React.FC = () => {
   // Generate users once and memoize the result
   const users = useMemo(() => generateUsers(100), []);
 
-  const [selectedMode, setSelectedMode] = useState<SelectionMode>('checkbox');
+  const [selectedMode, setSelectedMode] = useState<SelectionMode>('single'); // Change to 'single' or 'multi' as needed
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   return (

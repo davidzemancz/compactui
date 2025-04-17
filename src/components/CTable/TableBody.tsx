@@ -30,27 +30,25 @@ const TableBody: React.FC<TableBodyProps> = ({
             className={isSelected ? 'selected' : ''}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
-            {selectionMode === 'checkbox' && (
-              <td 
-                className="checkbox-cell"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectRow(rowId, !isSelected);
-                }}
-              >
-                <label className="ctable-checkbox" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onSelectRow(rowId, e.target.checked);
-                    }}
-                  />
-                  <span className="checkmark"></span>
-                </label>
-              </td>
-            )}
+            <td 
+              className="checkbox-cell"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectRow(rowId, !isSelected);
+              }}
+            >
+              <label className="ctable-checkbox" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onSelectRow(rowId, e.target.checked);
+                  }}
+                />
+                <span className="checkmark"></span>
+              </label>
+            </td>
             {orderedColumns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}

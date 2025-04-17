@@ -111,7 +111,7 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
   return (
     <thead>
       <tr>
-        {selectionMode === 'checkbox' && (
+        {selectionMode === 'multi' && (
           <th className="checkbox-cell">
             <label className="ctable-checkbox">
               <input
@@ -123,6 +123,9 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
               <span className="checkmark"></span>
             </label>
           </th>
+        )}
+        {selectionMode === 'single' && (
+          <th className="checkbox-cell"></th>
         )}
         {orderedColumns.map((column, index) => (
           <th 

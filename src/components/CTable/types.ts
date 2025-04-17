@@ -1,6 +1,6 @@
 export type ColumnDataType = 'string' | 'int' | 'decimal' | 'bool' | 'datetime';
 export type SortDirection = 'asc' | 'desc' | null;
-export type SelectionMode = 'single' | 'checkbox';
+export type SelectionMode = 'single' | 'multi';
 
 export interface Column {
   key: string;

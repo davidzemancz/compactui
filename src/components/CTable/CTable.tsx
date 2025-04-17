@@ -180,8 +180,9 @@ const CTable: React.FC<CTableProps> = ({
     let newSelectedIds: any[];
     
     if (selectionMode === 'single') {
+      // In single mode, always select the clicked item (deselect others)
       newSelectedIds = [id];
-    } else if (selectionMode === 'checkbox') {
+    } else if (selectionMode === 'multi') {
       if (selected === undefined) {
         // Toggle selection
         newSelectedIds = selectedIds.includes(id) 
