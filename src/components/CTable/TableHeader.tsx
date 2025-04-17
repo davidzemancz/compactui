@@ -127,7 +127,7 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
         {orderedColumns.map((column, index) => (
           <th 
             key={column.key} 
-            className={column.sortable ? 'sortable' : ''}
+            className="sortable"
             style={{ 
               textAlign: getAlignmentType(column.dataType) as any,
               width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,

@@ -18,9 +18,9 @@ const CTable: React.FC<CTableProps> = ({
       if (savedSort) {
         try {
           const parsed = JSON.parse(savedSort);
-          // Verify the column exists and is sortable
+          // Verify the column exists
           const column = columns.find(col => col.key === parsed.key);
-          if (column?.sortable && 
+          if (column && 
              (parsed.direction === 'asc' || parsed.direction === 'desc' || parsed.direction === null)) {
             return parsed;
           }
@@ -163,7 +163,7 @@ const CTable: React.FC<CTableProps> = ({
   // Sorting handler
   const handleSort = (key: string) => {
     const column = columns.find(col => col.key === key);
-    if (!column?.sortable) return;
+    if (!column) return;
 
     setSortConfig(prevConfig => {
       if (prevConfig.key === key) {

@@ -44,49 +44,25 @@ const generateUsers = (count: number): User[] => {
 const CTableDemo: React.FC = () => {
   // Sample columns configuration
   const columns: Column[] = [
-    { key: 'id', header: 'ID', dataType: 'int', sortable: true, width: 60 },
-    { key: 'name', header: 'Name', dataType: 'string', sortable: true, width: 150 },
-    { key: 'email', header: 'Email', dataType: 'string', sortable: true, width: 200 },
-    { key: 'role', header: 'Role', dataType: 'string', sortable: true, width: 120 },
-    { key: 'active', header: 'Status', dataType: 'bool', sortable: true, width: 80 },
-    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true, width: 100 },
-    { key: 'createdAt', header: 'Created', dataType: 'datetime', sortable: true, width: 150 },
-    { key: 'updatedAt', header: 'Updated', dataType: 'datetime', sortable: true, dateFormat: 'yyyy-MM-dd HH:mm:ss', width: 180 }
+    { key: 'id', header: 'ID', dataType: 'int' },
+    { key: 'name', header: 'Name', dataType: 'string' },
+    { key: 'email', header: 'Email', dataType: 'string' },
+    { key: 'role', header: 'Role', dataType: 'string' },
+    { key: 'active', header: 'Status', dataType: 'bool' },
+    { key: 'salary', header: 'Salary', dataType: 'decimal' },
+    { key: 'createdAt', header: 'Created', dataType: 'datetime' },
+    { key: 'updatedAt', header: 'Updated', dataType: 'datetime', dateFormat: 'yyyy-MM-dd HH:mm:ss' }
   ];
 
   // Generate users once and memoize the result
   const users = useMemo(() => generateUsers(100), []);
 
-  const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
+  const [selectedMode, setSelectedMode] = useState<SelectionMode>('checkbox');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   return (
     <div>
       <h1>Komponenta CTable</h1>
-      
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="selection-mode" style={{ marginRight: '0.5rem' }}>
-          Režim výběru:
-        </label>
-        <select 
-          id="selection-mode"
-          value={selectedMode}
-          onChange={(e) => {
-            setSelectedMode(e.target.value as SelectionMode);
-            setSelectedIds([]);
-          }}
-        >
-          <option value="single">Jednoduchý výběr</option>
-          <option value="checkbox">Vícenásobný výběr</option>
-        </select>
-        
-        <div style={{ marginTop: '0.5rem', fontSize: '0.9em', color: '#666' }}>
-          Pro změnu pořadí sloupců přetáhněte záhlaví sloupce na novou pozici.
-          Pro změnu šířky sloupce táhněte za pravý okraj záhlaví.
-          Stav sloupců (pořadí a šířka) je automaticky uložen v prohlížeči.
-        </div>
-      </div>
-      
       <CTable 
         columns={columns} 
         data={users}

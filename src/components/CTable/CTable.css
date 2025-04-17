@@ -1,11 +1,10 @@
 .ctable-container {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #fff;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  overflow: hidden;
-  font-size: 13px;
+  overflow: visible; /* Changed from hidden to visible */
   line-height: 1.3;
+  width: 100%;
 }
 
 .ctable-toolbar {
@@ -25,7 +24,6 @@
 .ctable-search input {
   width: 100%;
   padding: 6px 8px;
-  font-size: 13px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   background-color: #fff;
@@ -44,7 +42,6 @@
   border: none;
   border-radius: 4px;
   padding: 6px 12px;
-  font-size: 13px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -55,16 +52,38 @@
 
 .ctable-wrapper {
   overflow-x: auto;
+  overflow-y: auto;
   margin-bottom: 0;
   width: 100%;
   max-width: 100%;
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #bbb transparent; /* For Firefox */
+}
+
+/* Make scrollbars more visible in WebKit browsers */
+.ctable-wrapper::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.ctable-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.ctable-wrapper::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 4px;
+}
+
+.ctable-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .ctable {
   border-collapse: collapse;
-  width: 100%;
+  width: auto; /* Changed from 100% to auto */
   min-width: max-content; /* Ensures table doesn't shrink below content width */
-  font-size: 13px;
+  table-layout: auto; /* Changed from fixed to auto */
 }
 
 .ctable th {
@@ -235,12 +254,10 @@
 /* Compact mode specific adjustments */
 .ctable.compact th {
   padding: 6px 8px;
-  font-size: 12px;
 }
 
 .ctable.compact td {
   padding: 4px 8px;
-  font-size: 12px;
 }
 
 .ctable.compact .checkbox-cell {

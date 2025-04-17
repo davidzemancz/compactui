@@ -6,7 +6,6 @@ export interface Column {
   key: string;
   header: string;
   dataType?: ColumnDataType;
-  sortable?: boolean;
   dateFormat?: string;
   width?: number;
 }
