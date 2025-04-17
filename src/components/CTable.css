@@ -125,6 +125,12 @@
   padding: 6px;
 }
 
+.ctable td.checkbox-cell {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
 .ctable .empty-message {
   text-align: center;
   padding: 16px;
@@ -141,14 +147,19 @@
   height: 16px;
   margin: 0;
   cursor: pointer;
+  vertical-align: middle;
+  z-index: 1; /* Ensure checkmark is above other elements */
 }
 
 .ctable-checkbox input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
-  height: 0;
-  width: 0;
+  height: 16px; /* Match visible size */
+  width: 16px;  /* Match visible size */
+  z-index: 2;   /* Place above the checkmark for better click handling */
+  margin: 0;
+  padding: 0;
 }
 
 .checkmark {
@@ -170,6 +181,21 @@
 .ctable-checkbox input:checked ~ .checkmark {
   background-color: #2196f3;
   border-color: #2196f3;
+}
+
+.ctable-checkbox input:indeterminate ~ .checkmark {
+  background-color: #2196f3;
+  border-color: #2196f3;
+}
+
+.ctable-checkbox input:indeterminate ~ .checkmark:after {
+  display: block;
+  left: 5px;
+  top: 7px;
+  width: 6px;
+  height: 2px;
+  border-width: 0 0 2px 0;
+  transform: rotate(0deg);
 }
 
 .checkmark:after {

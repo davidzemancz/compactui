@@ -108,11 +108,12 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
   const allSelected = data.length > 0 && selectedIds.length === data.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < data.length;
   
+  // Apply indeterminate state to the checkbox
   useEffect(() => {
     if (checkboxRef.current) {
       checkboxRef.current.indeterminate = someSelected;
     }
-  }, [someSelected]);
+  }, [someSelected, selectedIds, data]); // Added additional dependencies to ensure effect runs
   
   const getSortIndicator = (columnKey: string): string => {
     if (sortConfig.key !== columnKey || !sortConfig.direction) return '';
@@ -276,12 +277,14 @@ const TableBody: React.FC<TableBodyProps> = ({
                   onSelectRow(rowId, !isSelected);
                 }}
               >
-                <label className="ctable-checkbox">
+                <label className="ctable-checkbox" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={(e) => onSelectRow(rowId, e.target.checked)}
-                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onSelectRow(rowId, e.target.checked);
+                    }}
                   />
                   <span className="checkmark"></span>
                 </label>
@@ -478,11 +481,14 @@ export const CTable: React.FC<CTableProps> = ({
 
   // Selection handlers
   const handleSelectRow = (id: any, selected?: boolean) => {
+    // Log for debugging
+    console.log('handleSelectRow called with', id, selected);
+    
     let newSelectedIds: any[];
     
     if (selectionMode === 'single') {
       newSelectedIds = [id];
-    } else {
+    } else if (selectionMode === 'checkbox') {
       if (selected === undefined) {
         // Toggle selection
         newSelectedIds = selectedIds.includes(id) 
@@ -490,11 +496,23 @@ export const CTable: React.FC<CTableProps> = ({
           : [...selectedIds, id];
       } else {
         // Explicit selection state
-        newSelectedIds = selected
-          ? [...selectedIds.filter(selId => selId !== id), id]
-          : selectedIds.filter(selId => selId !== id);
+        if (selected) {
+          // Add to selection if not already selected
+          newSelectedIds = selectedIds.includes(id) 
+            ? [...selectedIds] // Return a new array to trigger state update
+            : [...selectedIds, id];
+        } else {
+          // Remove from selection
+          newSelectedIds = selectedIds.filter(selId => selId !== id);
+        }
       }
+    } else {
+      // Fallback for unknown selection mode
+      newSelectedIds = [...selectedIds];
     }
+    
+    // More debugging
+    console.log('New selected IDs:', newSelectedIds);
     
     setSelectedIds(newSelectedIds);
     onSelectionChange?.(newSelectedIds);
