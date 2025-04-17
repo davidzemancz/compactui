@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { CTable, Column, SelectionMode } from '../components/CTable';
+import { Column, SelectionMode } from '../components/CTable/types'; // Import types from the right path
+import CTable from '../components/CTable/CTable';
 
 interface User {
   id: number;
