@@ -36,18 +36,6 @@ const formatCellValue = (value: any, dataType?: ColumnDataType): string => {
   }
 };
 
-const getAlignmentByDataType = (dataType?: ColumnDataType): React.CSSProperties => {
-  switch (dataType) {
-    case 'int':
-    case 'decimal':
-      return { textAlign: 'right' };
-    case 'bool':
-      return { textAlign: 'center' };
-    default:
-      return { textAlign: 'left' };
-  }
-};
-
 // Header component
 interface TableHeaderProps {
   columns: Column[];
@@ -88,7 +76,7 @@ const TableHeader: React.FC<TableHeaderProps> = ({
     <thead>
       <tr>
         {selectionMode === 'checkbox' && (
-          <th style={{ width: '40px', textAlign: 'center' }}>
+          <th className="ctable-checkbox-header">
             <input
               ref={checkboxRef}
               type="checkbox"
@@ -100,10 +88,8 @@ const TableHeader: React.FC<TableHeaderProps> = ({
         {columns.map((column) => (
           <th 
             key={column.key}
-            style={{
-              ...getAlignmentByDataType(column.dataType),
-              cursor: column.sortable ? 'pointer' : 'default'
-            }}
+            className={`ctable-header ${column.sortable ? 'ctable-sortable' : ''}`}
+            data-align={getAlignmentType(column.dataType)}
             onClick={() => onSort(column.key)}
           >
             {column.header}
@@ -113,6 +99,19 @@ const TableHeader: React.FC<TableHeaderProps> = ({
       </tr>
     </thead>
   );
+};
+
+// Helper function to get alignment type for className
+const getAlignmentType = (dataType?: ColumnDataType): string => {
+  switch (dataType) {
+    case 'int':
+    case 'decimal':
+      return 'right';
+    case 'bool':
+      return 'center';
+    default:
+      return 'left';
+  }
 };
 
 // Body component
@@ -140,14 +139,12 @@ const TableBody: React.FC<TableBodyProps> = ({
         return (
           <tr 
             key={rowId}
-            style={{ 
-              backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined,
-            }}
+            className={`ctable-row ${isSelected && selectionMode === 'single' ? 'ctable-row-selected' : ''}`}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
             {selectionMode === 'checkbox' && (
               <td 
-                style={{ textAlign: 'center', cursor: 'pointer' }}
+                className="ctable-checkbox-cell"
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectRow(rowId, !isSelected);
@@ -164,7 +161,8 @@ const TableBody: React.FC<TableBodyProps> = ({
             {columns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}
-                style={getAlignmentByDataType(column.dataType)}
+                className="ctable-cell"
+                data-align={getAlignmentType(column.dataType)}
               >
                 {formatCellValue(row[column.key], column.dataType)}
               </td>
@@ -189,6 +187,7 @@ export const CTable: React.FC<CTableProps> = ({
   }>({ key: '', direction: null });
   
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Sorting handlers
   const handleSort = (key: string) => {
@@ -238,11 +237,28 @@ export const CTable: React.FC<CTableProps> = ({
     onSelectionChange?.(newSelectedIds);
   };
 
-  // Compute sorted data
-  const sortedData = useMemo(() => {
-    if (!sortConfig.direction) return [...data];
+  // Compute filtered and sorted data
+  const filteredAndSortedData = useMemo(() => {
+    // First filter the data based on search term
+    let filteredData = [...data];
+    
+    if (searchTerm.trim()) {
+      const lowerSearchTerm = searchTerm.toLowerCase().trim();
+      
+      filteredData = filteredData.filter(row => {
+        // Search through all column values for this row
+        return columns.some(column => {
+          const value = row[column.key];
+          if (value == null) return false;
+          return String(value).toLowerCase().includes(lowerSearchTerm);
+        });
+      });
+    }
+    
+    // Then sort the filtered data
+    if (!sortConfig.direction) return filteredData;
 
-    const sortableItems = [...data];
+    const sortableItems = [...filteredData];
     const column = columns.find(col => col.key === sortConfig.key);
     
     return sortableItems.sort((a, b) => {
@@ -270,10 +286,19 @@ export const CTable: React.FC<CTableProps> = ({
 
       return sortConfig.direction === 'asc' ? comparison : -comparison;
     });
-  }, [data, sortConfig, columns]);
+  }, [data, searchTerm, sortConfig, columns]);
 
   return (
     <div className="ctable-wrapper">
+      <div className="ctable-search">
+        <input
+          type="text"
+          className="ctable-search-input"
+          placeholder="Vyhledat..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
       <table className="ctable">
         <TableHeader 
           columns={columns} 
@@ -281,17 +306,22 @@ export const CTable: React.FC<CTableProps> = ({
           onSort={handleSort}
           selectionMode={selectionMode}
           selectedIds={selectedIds}
-          data={sortedData}
+          data={filteredAndSortedData}
           onSelectAll={handleSelectAll}
         />
         <TableBody 
           columns={columns} 
-          data={sortedData}
+          data={filteredAndSortedData}
           selectionMode={selectionMode}
           selectedIds={selectedIds}
           onSelectRow={handleSelectRow}
         />
       </table>
+      {filteredAndSortedData.length === 0 && (
+        <div className="ctable-no-data">
+          Nebyla nalezena žádná data
+        </div>
+      )}
     </div>
   );
 };

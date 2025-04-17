@@ -129,6 +129,7 @@ const handleSelectionChange = (selectedIds: number[]) => {
           <li><code>data</code> (any[]) - Pole dat (objekty musí mít vlastnost 'id')</li>
           <li><code>selectionMode</code> (volitelné) - Režim výběru řádků ('single' (výchozí), 'checkbox')</li>
           <li><code>onSelectionChange</code> (volitelné) - Callback při změně výběru (obdrží pole vybraných id)</li>
+          <li><code>searchable</code> (volitelné) - Zobrazí vyhledávací pole nad tabulkou (true/false)</li>
         </ul>
       </section>
       
@@ -160,6 +161,7 @@ const handleSelectionChange = (selectedIds: number[]) => {
           selectionMode={selectedMode}
           onSelectionChange={handleSelectionChange}
           idField="id"
+          searchable={true}
         />
       </section>
     </div>
