@@ -13,12 +13,12 @@ interface User {
 const CTableDemo: React.FC = () => {
   // Sample columns configuration
   const columns: Column[] = [
-    { key: 'id', header: 'ID', dataType: 'int' },
-    { key: 'name', header: 'Name', dataType: 'string' },
-    { key: 'email', header: 'Email', dataType: 'string' },
-    { key: 'role', header: 'Role', dataType: 'string' },
-    { key: 'active', header: 'Status', dataType: 'bool' },
-    { key: 'salary', header: 'Salary', dataType: 'decimal' }
+    { key: 'id', header: 'ID', dataType: 'int', sortable: true },
+    { key: 'name', header: 'Name', dataType: 'string', sortable: true },
+    { key: 'email', header: 'Email', dataType: 'string', sortable: true },
+    { key: 'role', header: 'Role', dataType: 'string', sortable: true },
+    { key: 'active', header: 'Status', dataType: 'bool', sortable: true },
+    { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true }
   ];
 
   // Sample data
