@@ -20,12 +20,19 @@ export interface CTableProps {
 }
 
 // Utility functions
-const formatCellValue = (value: any, dataType?: ColumnDataType): string => {
+const formatCellValue = (value: any, dataType?: ColumnDataType): React.ReactNode => {
   if (value === undefined || value === null) return '';
   
   switch (dataType) {
     case 'bool':
-      return value ? 'True' : 'False';
+      return (
+        <input 
+          type="checkbox" 
+          checked={Boolean(value)} 
+          readOnly 
+          style={{ cursor: 'default' }}
+        />
+      );
     case 'int':
       return Number.isInteger(value) ? value.toString() : value;
     case 'decimal':
