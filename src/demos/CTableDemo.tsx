@@ -66,13 +66,13 @@ const CTableDemo: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-4">
-        <h1 className="text-xl font-semibold mb-4 text-gray-800">Data Table Component</h1>
+    <div className="space-y-3">
+      <div className="bg-white rounded shadow p-3">
+        <h1 className="text-lg font-semibold mb-2 text-gray-800">Data Table Component</h1>
         
-        <div className="mb-4 bg-blue-50 p-3 rounded border border-blue-200">
-          <h2 className="text-sm font-medium text-blue-800 mb-1">Component Features</h2>
-          <ul className="list-disc pl-5 text-xs text-blue-700 space-y-1">
+        <div className="mb-3 bg-blue-50 p-2 rounded border border-blue-200">
+          <h2 className="text-xs font-medium text-blue-800 mb-1">Component Features</h2>
+          <ul className="list-disc pl-4 text-xs text-blue-700 space-y-0.5">
             <li>Sortable columns (click header to sort)</li>
             <li>Resizable columns (drag column edges)</li>
             <li>Reorderable columns (drag and drop headers)</li>
@@ -82,8 +82,8 @@ const CTableDemo: React.FC = () => {
           </ul>
         </div>
         
-        <div className="mb-4">
-          <div className="flex items-center space-x-4 mb-2">
+        <div className="mb-3">
+          <div className="flex items-center space-x-2 mb-1">
             <span className="text-xs font-medium text-gray-700">Selection Mode:</span>
             <select 
               className="text-xs border border-gray-300 rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -96,7 +96,7 @@ const CTableDemo: React.FC = () => {
           </div>
           
           {selectedIds.length > 0 && (
-            <div className="bg-gray-50 p-2 rounded text-xs mb-4">
+            <div className="bg-gray-50 p-1.5 rounded text-xs mb-2">
               <span className="font-medium">Selected IDs:</span> {selectedIds.join(', ')}
             </div>
           )}
@@ -112,9 +112,9 @@ const CTableDemo: React.FC = () => {
         />
       </div>
       
-      <div className="bg-white rounded-lg shadow p-4">
-        <h2 className="text-lg font-medium mb-2 text-gray-800">Component Code</h2>
-        <div className="bg-gray-50 p-3 rounded border border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded shadow p-3">
+        <h2 className="text-sm font-medium mb-1 text-gray-800">Component Code</h2>
+        <div className="bg-gray-50 p-2 rounded border border-gray-200 overflow-x-auto">
           <pre className="text-xs text-gray-700">
 {`<CTable 
   columns={columns} 
