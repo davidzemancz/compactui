@@ -66,16 +66,67 @@ const CTableDemo: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Komponenta CTable</h1>
-      <CTable 
-        columns={columns} 
-        data={users}
-        selectionMode={selectedMode}
-        onSelectionChange={setSelectedIds}
-        onLinkClicked={handleLinkClick}
-        storageKey="demo-table" // Add storage key for persistence
-      />
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-4">
+        <h1 className="text-xl font-semibold mb-4 text-gray-800">Data Table Component</h1>
+        
+        <div className="mb-4 bg-blue-50 p-3 rounded border border-blue-200">
+          <h2 className="text-sm font-medium text-blue-800 mb-1">Component Features</h2>
+          <ul className="list-disc pl-5 text-xs text-blue-700 space-y-1">
+            <li>Sortable columns (click header to sort)</li>
+            <li>Resizable columns (drag column edges)</li>
+            <li>Reorderable columns (drag and drop headers)</li>
+            <li>Multi or single-row selection</li>
+            <li>Search functionality</li>
+            <li>Persistent state with localStorage</li>
+          </ul>
+        </div>
+        
+        <div className="mb-4">
+          <div className="flex items-center space-x-4 mb-2">
+            <span className="text-xs font-medium text-gray-700">Selection Mode:</span>
+            <select 
+              className="text-xs border border-gray-300 rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={selectedMode}
+              onChange={(e) => setSelectedMode(e.target.value as SelectionMode)}
+            >
+              <option value="single">Single Selection</option>
+              <option value="multi">Multi Selection</option>
+            </select>
+          </div>
+          
+          {selectedIds.length > 0 && (
+            <div className="bg-gray-50 p-2 rounded text-xs mb-4">
+              <span className="font-medium">Selected IDs:</span> {selectedIds.join(', ')}
+            </div>
+          )}
+        </div>
+        
+        <CTable 
+          columns={columns} 
+          data={users}
+          selectionMode={selectedMode}
+          onSelectionChange={setSelectedIds}
+          onLinkClicked={handleLinkClick}
+          storageKey="demo-table"
+        />
+      </div>
+      
+      <div className="bg-white rounded-lg shadow p-4">
+        <h2 className="text-lg font-medium mb-2 text-gray-800">Component Code</h2>
+        <div className="bg-gray-50 p-3 rounded border border-gray-200 overflow-x-auto">
+          <pre className="text-xs text-gray-700">
+{`<CTable 
+  columns={columns} 
+  data={users}
+  selectionMode="${selectedMode}"
+  onSelectionChange={setSelectedIds}
+  onLinkClicked={handleLinkClick}
+  storageKey="demo-table"
+/>`}
+          </pre>
+        </div>
+      </div>
     </div>
   );
 };

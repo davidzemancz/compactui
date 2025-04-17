@@ -112,25 +112,25 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
     <thead>
       <tr>
         {selectionMode === 'multi' && (
-          <th className="checkbox-cell">
-            <label className="ctable-checkbox">
+          <th className="w-10 p-2 bg-gray-50 sticky top-0">
+            <div className="flex items-center justify-center">
               <input
                 ref={checkboxRef}
                 type="checkbox"
                 checked={allSelected}
                 onChange={(e) => onSelectAll(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="checkmark"></span>
-            </label>
+            </div>
           </th>
         )}
         {selectionMode === 'single' && (
-          <th className="checkbox-cell"></th>
+          <th className="w-10 p-2 bg-gray-50 sticky top-0"></th>
         )}
         {orderedColumns.map((column, index) => (
           <th 
             key={column.key} 
-            className="sortable"
+            className="p-2 bg-gray-50 text-gray-700 font-medium border-b border-gray-300 sticky top-0 relative hover:bg-gray-100 cursor-pointer transition-colors"
             style={{ 
               textAlign: getAlignmentType(column.dataType) as any,
               width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : undefined,
@@ -149,12 +149,12 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
               dragOverItem.current = null;
             }}
           >
-            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div className="overflow-hidden text-ellipsis whitespace-nowrap">
               {column.header}
               {getSortIndicator(column.key)}
             </div>
             <div
-              className="resize-handle"
+              className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-blue-500 active:bg-blue-500"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => handleResizeStart(e, column.key)}
             />

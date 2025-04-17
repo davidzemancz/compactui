@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import { CTableProps, Column, SortDirection } from './types';
-import './CTable.css';
 
 const CTable: React.FC<CTableProps> = ({ 
   columns, 
@@ -310,20 +309,21 @@ const CTable: React.FC<CTableProps> = ({
   }, [data, searchTerm, sortConfig, columns]);
 
   return (
-    <div className="ctable-container">
-      <div className="ctable-toolbar compact">
-        <div className="ctable-search">
+    <div className="bg-white rounded shadow-md overflow-visible w-full text-xs">
+      <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200">
+        <div className="relative w-60">
           <input
             type="text"
             placeholder="Hledat v seznamu..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         
         {storageKey && (
           <button 
-            className="ctable-reset-button"
+            className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition-colors"
             onClick={handleReset}
           >
             Obnovit výchozí zobrazení
@@ -331,8 +331,8 @@ const CTable: React.FC<CTableProps> = ({
         )}
       </div>
       
-      <div className="ctable-wrapper">
-        <table className="ctable compact">
+      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+        <table className="min-w-max w-auto text-xs">
           <TableHeader 
             columns={columns}
             sortConfig={sortConfig}
@@ -359,7 +359,7 @@ const CTable: React.FC<CTableProps> = ({
       </div>
       
       {filteredAndSortedData.length === 0 && (
-        <div className="empty-message">
+        <div className="text-center py-4 text-gray-500 italic bg-gray-50">
           Nebyla nalezena žádná data
         </div>
       )}

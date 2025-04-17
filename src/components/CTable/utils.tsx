@@ -17,20 +17,14 @@ export const formatDate = (date: Date, format: string): string => {
 export const formatCellValue = (
   value: any, 
   dataType?: ColumnDataType, 
-  dateFormat?: string, 
-  linkText?: string,
-  onLinkClick?: (value: any) => void
+  dateFormat?: string
 ): React.ReactNode => {
   if (value === undefined || value === null) return '';
   
   switch (dataType) {
     case 'bool':
-      return (
-        <label className="ctable-checkbox readonly-checkbox">
-          <input type="checkbox" checked={Boolean(value)} readOnly />
-          <span className="checkmark"></span>
-        </label>
-      );
+      // This is now handled directly in the TableBody component for Tailwind styling
+      return value ? 'Yes' : 'No';
     case 'int':
       return Number.isInteger(value) ? value.toString() : value;
     case 'decimal':
@@ -43,20 +37,6 @@ export const formatCellValue = (
       } catch {
         return value;
       }
-    case 'link':
-      return (
-        <a 
-          href="#" 
-          className="ctable-link"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (onLinkClick) onLinkClick(value);
-          }}
-        >
-          {linkText || value}
-        </a>
-      );
     default:
       return value.toString();
   }
