@@ -56,11 +56,14 @@
 .ctable-wrapper {
   overflow-x: auto;
   margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .ctable {
   border-collapse: collapse;
-  width: auto;
+  width: 100%;
+  min-width: max-content; /* Ensures table doesn't shrink below content width */
   font-size: 13px;
 }
 
@@ -243,4 +246,24 @@
 .ctable.compact .checkbox-cell {
   width: 32px;
   padding: 3px 6px;
+}
+
+/* Compact toolbar styles */
+.ctable-toolbar.compact {
+  padding: 3px 6px;
+  min-height: 30px;
+}
+
+.ctable-toolbar.compact .ctable-search {
+  width: 200px;
+}
+
+.ctable-toolbar.compact .ctable-search input {
+  padding: 2px 4px;
+  height: 22px;
+}
+
+.ctable-toolbar.compact .ctable-reset-button {
+  padding: 2px 6px;
+  height: 22px;
 }

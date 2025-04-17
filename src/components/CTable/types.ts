@@ -17,5 +17,4 @@ export interface CTableProps {
   selectionMode?: SelectionMode;
   onSelectionChange?: (selectedIds: any[]) => void;
   storageKey?: string;
-  compact?: boolean;
 }

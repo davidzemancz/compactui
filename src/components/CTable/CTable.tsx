@@ -9,8 +9,7 @@ const CTable: React.FC<CTableProps> = ({
   data,
   selectionMode = 'single',
   onSelectionChange,
-  storageKey,
-  compact = true
+  storageKey
 }) => {
   // Initialize sort config with data from localStorage if available
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
@@ -310,7 +309,7 @@ const CTable: React.FC<CTableProps> = ({
 
   return (
     <div className="ctable-container">
-      <div className="ctable-toolbar">
+      <div className="ctable-toolbar compact">
         <div className="ctable-search">
           <input
             type="text"
@@ -331,7 +330,7 @@ const CTable: React.FC<CTableProps> = ({
       </div>
       
       <div className="ctable-wrapper">
-        <table className={`ctable ${compact ? 'compact' : ''}`}>
+        <table className="ctable compact">
           <TableHeader 
             columns={columns}
             sortConfig={sortConfig}
