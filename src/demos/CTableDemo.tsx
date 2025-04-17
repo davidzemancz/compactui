@@ -1,5 +1,5 @@
-import React from 'react';
-import { CTable, Column } from '../components/CTable';
+import React, { useState, useMemo } from 'react';
+import { CTable, Column, SelectionMode } from '../components/CTable';
 
 interface User {
   id: number;
@@ -9,6 +9,27 @@ interface User {
   active: boolean;
   salary: number;
 }
+
+// Helper function to generate random user data
+const generateUsers = (count: number): User[] => {
+  const roles = ['Admin', 'User', 'Manager', 'Developer', 'Designer', 'Tester'];
+  const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'David', 'Emma', 'Frank', 'Grace', 'Henry'];
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
+  const domains = ['example.com', 'company.co', 'acme.org', 'mail.net', 'work.io'];
+  
+  return Array.from({ length: count }, (_, i) => {
+    const id = i + 1;
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const name = `${firstName} ${lastName}`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domains[Math.floor(Math.random() * domains.length)]}`;
+    const role = roles[Math.floor(Math.random() * roles.length)];
+    const active = Math.random() > 0.3; // 70% chance of being active
+    const salary = Math.round(50000 + Math.random() * 50000 * 100) / 100; // Random salary between 50k and 100k
+    
+    return { id, name, email, role, active, salary };
+  });
+};
 
 const CTableDemo: React.FC = () => {
   // Sample columns configuration
@@ -21,19 +42,47 @@ const CTableDemo: React.FC = () => {
     { key: 'salary', header: 'Salary', dataType: 'decimal', sortable: true }
   ];
 
-  // Sample data
-  const users: User[] = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin', active: true, salary: 75000.50 },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User', active: true, salary: 65250.75 },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User', active: false, salary: 62000 },
-    { id: 4, name: 'Alice Williams', email: 'alice@example.com', role: 'Manager', active: true, salary: 85500.25 },
-    { id: 5, name: 'Charlie Brown', email: 'charlie@example.com', role: 'User', active: false, salary: 61750.80 }
-  ];
+  // Generate users once and memoize the result
+  const users = useMemo(() => generateUsers(1000), []);
+
+  const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const handleSelectionChange = (ids: any[]) => {
+    setSelectedIds(ids);
+  };
+
+  const handleModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMode(event.target.value as SelectionMode);
+    setSelectedIds([]);
+  };
 
   return (
     <div>
-      <h2>CTable</h2>
-      <CTable columns={columns} data={users} />
+      <h2>CTable (1000 rows)</h2>
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="selection-mode" style={{ marginRight: '0.5rem' }}>
+          Selection mode:
+        </label>
+        <select 
+          id="selection-mode"
+          value={selectedMode}
+          onChange={handleModeChange}
+        >
+          <option value="none">None</option>
+          <option value="single">Single select</option>
+          <option value="checkbox">Multiple select</option>
+        </select>
+      </div>
+      
+      <CTable 
+        columns={columns} 
+        data={users}
+        selectionMode={selectedMode}
+        onSelectionChange={handleSelectionChange}
+        idField="id"
+      />
     </div>
   );
 };
