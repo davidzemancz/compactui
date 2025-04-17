@@ -1,12 +1,11 @@
-import { useState } from 'react'
-
+import React from 'react';
+import CTableDemo from './demos/CTableDemo';
 
 function App() {
-
   return (
-    <>
-      cus
-    </>
+    <div className="app">
+      <CTableDemo />
+    </div>
   )
 }
 
