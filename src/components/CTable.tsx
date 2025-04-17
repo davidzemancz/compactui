@@ -232,7 +232,7 @@ export const CTable: React.FC<CTableProps> = ({
   };
 
   const handleSelectAll = (selected: boolean) => {
-    const newSelectedIds = selected ? sortedData.map(row => row.id) : [];
+    const newSelectedIds = selected ? filteredAndSortedData.map(row => row.id) : [];
     setSelectedIds(newSelectedIds);
     onSelectionChange?.(newSelectedIds);
   };
