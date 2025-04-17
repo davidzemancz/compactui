@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import CTextInput from '../CTextInput/CTextInput';
 
 interface TableToolbarProps {
   searchTerm: string;
@@ -23,26 +24,12 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
 
   return (
     <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200 flex-shrink-0 relative z-30">
-      <div className="relative w-60">
-        <input
-          type="text"
-          placeholder="Hledat v seznamu..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-        />
-        {searchTerm && (
-          <button
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-            onClick={() => setSearchTerm('')}
-            aria-label="Clear search"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
+      <CTextInput
+        value={searchTerm}
+        onChange={setSearchTerm}
+        placeholder="Hledat v seznamu..."
+        className="w-60"
+      />
       
       {storageKey && (
         <div className="relative" ref={menuRef}>
