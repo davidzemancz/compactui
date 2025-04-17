@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import { CTableProps, Column, SortDirection } from './types';
+import { formatCellValue } from './utils';
 
 const CTable: React.FC<CTableProps> = ({ 
   columns, 
@@ -327,6 +328,62 @@ const CTable: React.FC<CTableProps> = ({
     });
   }, [data, searchTerm, sortConfig, columns]);
 
+  // Function to export data to CSV
+  const exportToCSV = () => {
+    // Close the menu first
+    setMenuOpen(false);
+    
+    // Get the visible and ordered columns
+    const visibleColumns = columns.sort((a, b) => 
+      columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
+    );
+    
+    // Create header row with column headers
+    const headerRow = visibleColumns.map(col => `"${col.header}"`).join(',');
+    
+    // Create data rows
+    const dataRows = filteredAndSortedData.map(row => {
+      return visibleColumns.map(column => {
+        // Get the raw value
+        const value = row[column.key];
+        
+        // Format the value based on its data type, but keep it simple for CSV
+        let formattedValue = '';
+        
+        if (value === null || value === undefined) {
+          formattedValue = '';
+        } else if (column.dataType === 'bool') {
+          formattedValue = value ? 'Ano' : 'Ne';
+        } else if (column.dataType === 'link') {
+          formattedValue = String(value);
+        } else {
+          // Use the formatCellValue function without React rendering
+          const formatted = formatCellValue(value, column.dataType, column.dateFormat);
+          formattedValue = String(formatted);
+        }
+        
+        // Escape double quotes and enclose in quotes to handle commas and special characters
+        return `"${formattedValue.replace(/"/g, '""')}"`;
+      }).join(',');
+    }).join('\n');
+    
+    // Combine header and data rows
+    const csvContent = `${headerRow}\n${dataRows}`;
+    
+    // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create a download link and trigger it
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `table-export-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="bg-white rounded shadow-md overflow-hidden w-full h-full flex flex-col text-xs">
       <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200 flex-shrink-0 relative z-30">
@@ -355,12 +412,23 @@ const CTable: React.FC<CTableProps> = ({
             {menuOpen && (
               <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-50 py-1 text-xs border border-gray-200">
                 <button
-                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                  onClick={exportToCSV}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Exportovat do CSV
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
                   onClick={handleReset}
                 >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   Obnovit výchozí zobrazení
                 </button>
-                {/* Add more menu items as needed */}
               </div>
             )}
           </div>
