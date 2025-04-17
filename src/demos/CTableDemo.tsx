@@ -15,21 +15,20 @@ interface User {
 // Helper function to generate random user data
 const generateUsers = (count: number): User[] => {
   const roles = ['Admin', 'User', 'Manager', 'Developer', 'Designer', 'Tester'];
-  const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'David', 'Emma', 'Frank', 'Grace', 'Henry'];
-  const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor'];
-  const domains = ['example.com', 'company.co', 'acme.org', 'mail.net', 'work.io'];
+  const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'David', 'Emma', 'Frank'];
+  const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller'];
   
   return Array.from({ length: count }, (_, i) => {
     const id = i + 1;
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${domains[Math.floor(Math.random() * domains.length)]}`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
     const role = roles[Math.floor(Math.random() * roles.length)];
-    const active = Math.random() > 0.3; // 70% chance of being active
-    const salary = Math.round(50000 + Math.random() * 50000 * 100) / 100; // Random salary between 50k and 100k
+    const active = Math.random() > 0.3;
+    const salary = Math.round(50000 + Math.random() * 50000 * 100) / 100;
     
-    // Generate random dates within the last year
+    // Generate random dates
     const now = new Date();
     const createdDate = new Date(now.getTime() - Math.random() * 365 * 24 * 60 * 60 * 1000);
     const updatedDate = new Date(createdDate.getTime() + Math.random() * (now.getTime() - createdDate.getTime()));
@@ -60,15 +59,6 @@ const CTableDemo: React.FC = () => {
   const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  const handleSelectionChange = (ids: any[]) => {
-    setSelectedIds(ids);
-  };
-
-  const handleModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedMode(event.target.value as SelectionMode);
-    setSelectedIds([]);
-  };
-
   return (
     <div>
       <h1>Komponenta CTable</h1>
@@ -80,7 +70,10 @@ const CTableDemo: React.FC = () => {
         <select 
           id="selection-mode"
           value={selectedMode}
-          onChange={handleModeChange}
+          onChange={(e) => {
+            setSelectedMode(e.target.value as SelectionMode);
+            setSelectedIds([]);
+          }}
         >
           <option value="single">Jednoduchý výběr</option>
           <option value="checkbox">Vícenásobný výběr</option>
@@ -95,7 +88,7 @@ const CTableDemo: React.FC = () => {
         columns={columns} 
         data={users}
         selectionMode={selectedMode}
-        onSelectionChange={handleSelectionChange}
+        onSelectionChange={setSelectedIds}
       />
     </div>
   );

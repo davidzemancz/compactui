@@ -10,7 +10,7 @@ export interface Column {
   header: string;
   dataType?: ColumnDataType;
   sortable?: boolean;
-  dateFormat?: string; // Format for datetime columns
+  dateFormat?: string;
 }
 
 export interface CTableProps {
@@ -26,54 +26,48 @@ const formatCellValue = (value: any, dataType?: ColumnDataType, dateFormat?: str
   
   switch (dataType) {
     case 'bool':
-      return (
-        <input 
-          type="checkbox" 
-          checked={Boolean(value)} 
-          readOnly 
-          style={{ cursor: 'default' }}
-        />
-      );
+      return <input type="checkbox" checked={Boolean(value)} readOnly style={{ cursor: 'default' }} />;
     case 'int':
       return Number.isInteger(value) ? value.toString() : value;
     case 'decimal':
       return typeof value === 'number' ? value.toFixed(2) : value;
     case 'datetime':
       try {
-        // Parse the datetime string
         const date = new Date(value);
-        if (isNaN(date.getTime())) {
-          return value; // Return original value if parsing fails
-        }
-        
-        // Format the date according to provided format or default format
-        const format = dateFormat || 'dd.MM.yyyy HH:mm';
-        return formatDate(date, format);
-      } catch (error) {
-        return value; // Return original value if formatting fails
+        if (isNaN(date.getTime())) return value;
+        return formatDate(date, dateFormat || 'dd.MM.yyyy HH:mm');
+      } catch {
+        return value;
       }
-    case 'string':
     default:
       return value.toString();
   }
 };
 
-// Helper function to format date according to format string
 const formatDate = (date: Date, format: string): string => {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
+  const parts = {
+    dd: date.getDate().toString().padStart(2, '0'),
+    MM: (date.getMonth() + 1).toString().padStart(2, '0'),
+    yyyy: date.getFullYear().toString(),
+    HH: date.getHours().toString().padStart(2, '0'),
+    mm: date.getMinutes().toString().padStart(2, '0'),
+    ss: date.getSeconds().toString().padStart(2, '0')
+  };
   
-  return format
-    .replace('dd', day)
-    .replace('MM', month)
-    .replace('yyyy', year.toString())
-    .replace('HH', hours)
-    .replace('mm', minutes)
-    .replace('ss', seconds);
+  return format.replace(/dd|MM|yyyy|HH|mm|ss/g, match => parts[match as keyof typeof parts]);
+};
+
+const getAlignmentType = (dataType?: ColumnDataType): string => {
+  switch (dataType) {
+    case 'int':
+    case 'decimal':
+    case 'datetime':
+      return 'right';
+    case 'bool':
+      return 'center';
+    default:
+      return 'left';
+  }
 };
 
 // Header component
@@ -89,26 +83,18 @@ interface TableHeaderProps {
   onColumnReorder: (dragIndex: number, hoverIndex: number) => void;
 }
 
-const TableHeader: React.FC<TableHeaderProps> = ({ 
-  columns, 
-  sortConfig, 
-  onSort, 
-  selectionMode, 
-  selectedIds, 
-  data, 
-  onSelectAll,
-  columnOrder,
-  onColumnReorder
-}) => {
-  const getSortIndicator = (columnKey: string): string => {
-    if (sortConfig.key !== columnKey || !sortConfig.direction) return '';
-    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
-  };
-
-  const allSelected = data.length > 0 && selectedIds.length === data.length;
-  const someSelected = selectedIds.length > 0 && selectedIds.length < data.length;
+const TableHeader: React.FC<TableHeaderProps> = (props) => {
+  const { 
+    columns, sortConfig, onSort, selectionMode, 
+    selectedIds, data, onSelectAll, columnOrder, onColumnReorder 
+  } = props;
   
   const checkboxRef = useRef<HTMLInputElement>(null);
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+  
+  const allSelected = data.length > 0 && selectedIds.length === data.length;
+  const someSelected = selectedIds.length > 0 && selectedIds.length < data.length;
   
   useEffect(() => {
     if (checkboxRef.current) {
@@ -116,28 +102,20 @@ const TableHeader: React.FC<TableHeaderProps> = ({
     }
   }, [someSelected]);
   
-  const dragItem = useRef<number | null>(null);
-  const dragOverItem = useRef<number | null>(null);
+  const getSortIndicator = (columnKey: string): string => {
+    if (sortConfig.key !== columnKey || !sortConfig.direction) return '';
+    return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+  };
   
   const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>, index: number) => {
     dragItem.current = index;
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
     e.currentTarget.style.opacity = '0.4';
   };
   
   const handleDragOver = (e: React.DragEvent<HTMLTableCellElement>, index: number) => {
     e.preventDefault();
     dragOverItem.current = index;
-    e.dataTransfer.dropEffect = 'move';
-  };
-  
-  const handleDragEnter = (e: React.DragEvent<HTMLTableCellElement>) => {
-    e.currentTarget.style.backgroundColor = '#f5f5f5';
-  };
-  
-  const handleDragLeave = (e: React.DragEvent<HTMLTableCellElement>) => {
-    e.currentTarget.style.backgroundColor = '';
   };
   
   const handleDrop = (e: React.DragEvent<HTMLTableCellElement>) => {
@@ -149,16 +127,10 @@ const TableHeader: React.FC<TableHeaderProps> = ({
     }
   };
   
-  const handleDragEnd = (e: React.DragEvent<HTMLTableCellElement>) => {
-    e.currentTarget.style.opacity = '1';
-    dragItem.current = null;
-    dragOverItem.current = null;
-  };
-  
   // Get columns in the order defined by columnOrder
-  const orderedColumns = [...columns].sort((a, b) => {
-    return columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key);
-  });
+  const orderedColumns = [...columns].sort((a, b) => 
+    columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
+  );
   
   return (
     <thead>
@@ -185,10 +157,14 @@ const TableHeader: React.FC<TableHeaderProps> = ({
             draggable="true"
             onDragStart={(e) => handleDragStart(e, index)}
             onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
+            onDragEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+            onDragLeave={(e) => e.currentTarget.style.backgroundColor = ''}
             onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
+            onDragEnd={(e) => {
+              e.currentTarget.style.opacity = '1';
+              dragItem.current = null;
+              dragOverItem.current = null;
+            }}
           >
             {column.header}
             {getSortIndicator(column.key)}
@@ -197,19 +173,6 @@ const TableHeader: React.FC<TableHeaderProps> = ({
       </tr>
     </thead>
   );
-};
-
-// Helper function to get alignment type for className
-const getAlignmentType = (dataType?: ColumnDataType): string => {
-  switch (dataType) {
-    case 'int':
-    case 'decimal':
-      return 'right';
-    case 'bool':
-      return 'center';
-    default:
-      return 'left';
-  }
 };
 
 // Body component
@@ -223,17 +186,11 @@ interface TableBodyProps {
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ 
-  columns, 
-  data, 
-  selectionMode, 
-  selectedIds, 
-  onSelectRow,
-  columnOrder
+  columns, data, selectionMode, selectedIds, onSelectRow, columnOrder 
 }) => {
-  // Get columns in the order defined by columnOrder
-  const orderedColumns = [...columns].sort((a, b) => {
-    return columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key);
-  });
+  const orderedColumns = [...columns].sort((a, b) => 
+    columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
+  );
   
   return (
     <tbody>
@@ -244,9 +201,7 @@ const TableBody: React.FC<TableBodyProps> = ({
         return (
           <tr 
             key={rowId}
-            style={{ 
-              backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined,
-            }}
+            style={{ backgroundColor: isSelected && selectionMode === 'single' ? '#e6f7ff' : undefined }}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
             {selectionMode === 'checkbox' && (
@@ -287,15 +242,11 @@ export const CTable: React.FC<CTableProps> = ({
   selectionMode = 'single',
   onSelectionChange
 }) => {
-  const [sortConfig, setSortConfig] = useState<{
-    key: string;
-    direction: SortDirection;
-  }>({ key: '', direction: null });
-  
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>({ 
+    key: '', direction: null 
+  });
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-
-  // State to track column order
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
   
   // Initialize column order when columns change
@@ -303,20 +254,7 @@ export const CTable: React.FC<CTableProps> = ({
     setColumnOrder(columns.map(col => col.key));
   }, [columns]);
   
-  // Handle column reordering
-  const handleColumnReorder = (dragIndex: number, hoverIndex: number) => {
-    const draggedColKey = columnOrder[dragIndex];
-    const newColumnOrder = [...columnOrder];
-    
-    // Remove dragged item
-    newColumnOrder.splice(dragIndex, 1);
-    // Add it at the new position
-    newColumnOrder.splice(hoverIndex, 0, draggedColKey);
-    
-    setColumnOrder(newColumnOrder);
-  };
-
-  // Sorting handlers
+  // Sorting handler
   const handleSort = (key: string) => {
     const column = columns.find(col => col.key === key);
     if (!column?.sortable) return;
@@ -326,21 +264,18 @@ export const CTable: React.FC<CTableProps> = ({
         const direction = prevConfig.direction === 'asc' ? 'desc' : 
                           prevConfig.direction === 'desc' ? null : 'asc';
         return { key, direction };
-      } else {
-        return { key, direction: 'asc' };
       }
+      return { key, direction: 'asc' };
     });
   };
 
-  // Selection handlers  
+  // Selection handlers
   const handleSelectRow = (id: any, selected?: boolean) => {
+    let newSelectedIds: any[];
+    
     if (selectionMode === 'single') {
-      const newSelectedIds = [id];
-      setSelectedIds(newSelectedIds);
-      onSelectionChange?.(newSelectedIds);
-    } else if (selectionMode === 'checkbox') {
-      let newSelectedIds: any[];
-      
+      newSelectedIds = [id];
+    } else {
       if (selected === undefined) {
         // Toggle selection
         newSelectedIds = selectedIds.includes(id) 
@@ -352,10 +287,10 @@ export const CTable: React.FC<CTableProps> = ({
           ? [...selectedIds.filter(selId => selId !== id), id]
           : selectedIds.filter(selId => selId !== id);
       }
-      
-      setSelectedIds(newSelectedIds);
-      onSelectionChange?.(newSelectedIds);
     }
+    
+    setSelectedIds(newSelectedIds);
+    onSelectionChange?.(newSelectedIds);
   };
 
   const handleSelectAll = (selected: boolean) => {
@@ -364,31 +299,36 @@ export const CTable: React.FC<CTableProps> = ({
     onSelectionChange?.(newSelectedIds);
   };
 
-  // Compute filtered and sorted data
+  // Column reordering
+  const handleColumnReorder = (dragIndex: number, hoverIndex: number) => {
+    const newOrder = [...columnOrder];
+    const draggedItem = newOrder[dragIndex];
+    newOrder.splice(dragIndex, 1);
+    newOrder.splice(hoverIndex, 0, draggedItem);
+    setColumnOrder(newOrder);
+  };
+
+  // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    // First filter the data based on search term
-    let filteredData = [...data];
+    // Filter data by search term
+    let result = [...data];
     
     if (searchTerm.trim()) {
-      const lowerSearchTerm = searchTerm.toLowerCase().trim();
-      
-      filteredData = filteredData.filter(row => {
-        // Search through all column values for this row
-        return columns.some(column => {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(row => 
+        columns.some(column => {
           const value = row[column.key];
-          if (value == null) return false;
-          return String(value).toLowerCase().includes(lowerSearchTerm);
-        });
-      });
+          return value != null && String(value).toLowerCase().includes(term);
+        })
+      );
     }
     
-    // Then sort the filtered data
-    if (!sortConfig.direction) return filteredData;
+    // Sort data if needed
+    if (!sortConfig.direction) return result;
 
-    const sortableItems = [...filteredData];
     const column = columns.find(col => col.key === sortConfig.key);
     
-    return sortableItems.sort((a, b) => {
+    return result.sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
@@ -409,8 +349,6 @@ export const CTable: React.FC<CTableProps> = ({
           break;
         case 'datetime':
           try {
-            // Expect input format: 'yyyy-MM-dd HH:mm:ss'
-            // Parse dates manually for consistent results
             const parseDate = (dateStr: string): Date => {
               const [datePart = '', timePart = ''] = dateStr.split(' ');
               const [year = '0', month = '0', day = '0'] = datePart.split('-');
@@ -418,7 +356,7 @@ export const CTable: React.FC<CTableProps> = ({
               
               return new Date(
                 parseInt(year, 10),
-                parseInt(month, 10) - 1, // Month is 0-indexed in JS Date
+                parseInt(month, 10) - 1,
                 parseInt(day, 10),
                 parseInt(hours, 10),
                 parseInt(minutes, 10),
@@ -434,8 +372,7 @@ export const CTable: React.FC<CTableProps> = ({
             } else {
               comparison = String(aValue).localeCompare(String(bValue));
             }
-          } catch (error) {
-            // Fallback to string comparison if date parsing fails
+          } catch {
             comparison = String(aValue).localeCompare(String(bValue));
           }
           break;
@@ -461,8 +398,8 @@ export const CTable: React.FC<CTableProps> = ({
       
       <table style={{ borderCollapse: 'collapse' }}>
         <TableHeader 
-          columns={columns} 
-          sortConfig={sortConfig} 
+          columns={columns}
+          sortConfig={sortConfig}
           onSort={handleSort}
           selectionMode={selectionMode}
           selectedIds={selectedIds}
@@ -472,7 +409,7 @@ export const CTable: React.FC<CTableProps> = ({
           onColumnReorder={handleColumnReorder}
         />
         <TableBody 
-          columns={columns} 
+          columns={columns}
           data={filteredAndSortedData}
           selectionMode={selectionMode}
           selectedIds={selectedIds}
