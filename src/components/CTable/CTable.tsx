@@ -4,6 +4,8 @@ import TableBody from './TableBody';
 import TableToolbar from './TableToolbar';
 import { CTableProps, Column, SortDirection, SelectionMode } from './types';
 import { formatCellValue } from './utils';
+// If needed, add import for ExportIcon
+// import { ExportIcon } from '../CIcons/index';
 
 const CTable: React.FC<CTableProps> = ({ 
   columns, 

@@ -1,7 +1,7 @@
 import React from 'react';
 
-// Interface for all icons to ensure consistent props
-interface IconProps {
+// Export IconProps interface for use throughout the app
+export interface IconProps {
   className?: string;
 }
 
@@ -62,7 +62,7 @@ export const DeleteIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) => (
 );
 
 export const RefreshIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
   </svg>
 );
@@ -91,5 +91,17 @@ export const RadioButtonIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) 
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
     <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+export const SaveIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+  </svg>
+);
+
+export const CloseIcon: React.FC<IconProps> = ({ className = "h-4 w-4" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 );

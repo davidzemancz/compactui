@@ -3,6 +3,7 @@ import CTextInput from '../CTextInput/CTextInput';
 import CMenu from '../CMenu/CMenu';
 import CTooltip from '../CTooltip/CTooltip';
 import { SelectionMode } from './types';
+import { CheckboxIcon, RadioButtonIcon } from '../CIcons/index';
 
 interface TableToolbarProps {
   searchTerm: string;

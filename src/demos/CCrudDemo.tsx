@@ -6,7 +6,14 @@ import CForm from '../components/CForm/CForm';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { FormField } from '../components/CForm/types';
-import { AddIcon, EditIcon, DeleteIcon, CloseIcon, RefreshIcon, SaveIcon } from '../components/CIcons';
+import { 
+  AddIcon, 
+  EditIcon, 
+  DeleteIcon, 
+  RefreshIcon, 
+  SaveIcon, 
+  CloseIcon 
+} from '../components/CIcons';
 import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
 
 // Our CRUD Actions enum
@@ -31,6 +38,8 @@ const CCrudDemo: React.FC = () => {
   const [crudAction, setCrudAction] = useState<CrudAction>(CrudAction.None);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  // Add a state to track the user being edited for re-selection after save
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
   
   // Form fields definition
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -305,6 +314,8 @@ const CCrudDemo: React.FC = () => {
           joined: new Date().toISOString().slice(0, 10),
           lastLogin: new Date().toISOString().slice(0, 10)
         });
+        // Clear the editing user ID when adding a new user
+        setEditingUserId(null);
         break;
         
       case 'edit':
@@ -313,6 +324,8 @@ const CCrudDemo: React.FC = () => {
           if (user) {
             setCrudAction(CrudAction.Edit);
             setCurrentUser({ ...user });
+            // Save the ID of the user being edited for re-selection
+            setEditingUserId(user.id);
           }
         }
         break;
@@ -354,11 +367,17 @@ const CCrudDemo: React.FC = () => {
       if (crudAction === CrudAction.Create) {
         // Add new user
         setUsers(prev => [...prev, currentUser]);
+        // Select the newly created user
+        setSelectedUsers([currentUser.id]);
       } else if (crudAction === CrudAction.Edit) {
         // Update existing user
         setUsers(prev => 
           prev.map(user => user.id === currentUser.id ? currentUser : user)
         );
+        // Re-select the edited user if we have an ID
+        if (editingUserId) {
+          setSelectedUsers([editingUserId]);
+        }
       }
       
       // Reset state
@@ -405,7 +424,7 @@ const CCrudDemo: React.FC = () => {
               <CTable
                 columns={columns}
                 data={filteredUsers}
-                selectionMode="single"
+                selectionMode="multi"
                 onSelectionChange={setSelectedUsers}
                 onLinkClicked={handleLinkClick}
                 storageKey="crud-users-table"
