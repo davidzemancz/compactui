@@ -135,21 +135,20 @@ const CFilteredTable: React.FC = () => {
     }, [allUsers, appliedFilters]);
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-xs font-bold mb-4">Filtered table</h1>
+        <div className="space-y-4">
 
-            {/* Filter section */}
-            <div className="mb-4">
+            {/* Filter section - Made more compact */}
+            <div>
                 <CFilter
                     fields={filterFields}
                     onFilterApply={setAppliedFilters}
                     required={filteredUsers.length === 0 && allUsers.length > 0}
+                    className="p-3" // Reduced padding
                 />
             </div>
 
-
-            {/* Table section */}
-            <div className="h-96 bg-white rounded shadow overflow-hidden">
+            {/* Table section - Increased height */}
+            <div className="h-[calc(100vh-220px)] bg-white rounded shadow overflow-hidden">
                 <CTable
                     columns={columns}
                     data={filteredUsers}
@@ -158,21 +157,6 @@ const CFilteredTable: React.FC = () => {
                     onLinkClicked={handleLinkClick}
                     storageKey="filtered-users-table"
                 />
-            </div>
-
-
-            {/* Usage information */}
-            <div className="bg-gray-50 rounded p-4 text-xs text-gray-700 mt-8">
-                <h3 className="font-medium mb-2">Použití kombinace CFilter a CTable</h3>
-                <p className="mb-2">
-                    Tento příklad ukazuje, jak lze propojit komponenty CFilter a CTable pro vytvoření
-                    interaktivní filtrované tabulky dat. Filtry se aplikují pomocí tlačítka "Zobrazit"
-                    a výsledky jsou okamžitě aktualizovány v tabulce.
-                </p>
-                <p>
-                    Všimněte si, že při filtrování se zachovává výběr řádků a nastavení tabulky je
-                    uchováno v localStorage díky vlastnosti <code>storageKey</code>.
-                </p>
             </div>
         </div>
     );

@@ -119,19 +119,21 @@ const CFilter: React.FC<CFilterProps> = ({
           </div>
         ))}
         
-        <div className="flex items-end gap-2">
-          <button
-            onClick={handleResetFilters}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 text-xs"
-          >
-            Výchozí
-          </button>
-          <button
-            onClick={handleApplyFilters}
-            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs"
-          >
-            Zobrazit
-          </button>
+        <div className="flex flex-col min-w-[200px] justify-end">
+          <div className="flex gap-2">
+            <button
+              onClick={handleResetFilters}
+              className="px-3 h-[26px] bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 text-xs flex items-center justify-center"
+            >
+              Výchozí
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="px-3 h-[26px] bg-blue-500 hover:bg-blue-600 text-white rounded text-xs flex items-center justify-center"
+            >
+              Zobrazit
+            </button>
+          </div>
         </div>
       </div>
     </div>
