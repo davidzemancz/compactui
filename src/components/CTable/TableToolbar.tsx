@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CTextInput from '../CTextInput/CTextInput';
 import CMenu from '../CMenu/CMenu';
+import CTooltip from '../CTooltip/CTooltip';
+import { SelectionMode } from './types';
 
 interface TableToolbarProps {
   searchTerm: string;
@@ -10,6 +12,9 @@ interface TableToolbarProps {
   setMenuOpen: (open: boolean) => void;
   exportToCSV: () => void;
   handleReset: () => void;
+  allowSelectionModeChange?: boolean;
+  selectionMode: SelectionMode;
+  onSelectionModeChange: (mode: SelectionMode) => void;
 }
 
 const TableToolbar: React.FC<TableToolbarProps> = ({
@@ -19,8 +24,12 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   menuOpen,
   setMenuOpen,
   exportToCSV,
-  handleReset
+  handleReset,
+  allowSelectionModeChange = false,
+  selectionMode,
+  onSelectionModeChange
 }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
   const menuItems = [
     {
       label: 'Exportovat do CSV',
@@ -51,14 +60,38 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         className="w-60"
       />
       
-      {storageKey && (
-        <CMenu
-          isOpen={menuOpen}
-          setIsOpen={setMenuOpen}
-          items={menuItems}
-          triggerAriaLabel="Table options"
-        />
-      )}
+      <div className="flex items-center gap-2">
+        {allowSelectionModeChange && (
+          <CTooltip content={selectionMode === 'single' ? 'Hromadný výběr' : 'Zrušit hromadný výběr'}>
+            <button
+              onClick={() => onSelectionModeChange(selectionMode === 'single' ? 'multi' : 'single')}
+              className="p-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              aria-label={selectionMode === 'single' ? 'Hromadný výběr' : 'Zrušit hromadný výběr'}
+            >
+              {selectionMode === 'single' ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="5" width="16" height="16" rx="2" />
+                  <path d="M9 11l3 3l6-6" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </CTooltip>
+        )}
+        
+        {storageKey && (
+          <CMenu
+            isOpen={menuOpen}
+            setIsOpen={setMenuOpen}
+            items={menuItems}
+            triggerAriaLabel="Table options"
+          />
+        )}
+      </div>
     </div>
   );
 };

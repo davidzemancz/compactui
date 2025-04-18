@@ -152,10 +152,11 @@ const CFilteredTableDemo: React.FC = () => {
                 <CTable
                     columns={columns}
                     data={filteredUsers}
-                    selectionMode="multi"
+                    selectionMode="single"
                     onSelectionChange={setSelectedUsers}
                     onLinkClicked={handleLinkClick}
                     storageKey="filtered-users-table"
+                    allowSelectionModeChange={true}
                 />
             </div>
         </div>

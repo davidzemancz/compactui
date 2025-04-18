@@ -2,18 +2,21 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import TableToolbar from './TableToolbar';
-import { CTableProps, Column, SortDirection } from './types';
+import { CTableProps, Column, SortDirection, SelectionMode } from './types';
 import { formatCellValue } from './utils';
 
 const CTable: React.FC<CTableProps> = ({ 
   columns, 
   data,
-  selectionMode = 'single',
+  selectionMode: initialSelectionMode = 'single',
   onSelectionChange,
   onLinkClicked,
-  storageKey
+  storageKey,
+  allowSelectionModeChange = false
 }) => {
-  // Initialize sort config with data from localStorage if available
+  // Add state to track the current selection mode
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>(initialSelectionMode);
+  const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
     if (storageKey) {
       const savedSort = localStorage.getItem(`${storageKey}-sort`);
@@ -34,7 +37,6 @@ const CTable: React.FC<CTableProps> = ({
     return { key: '', direction: null };
   });
   
-  const [selectedIds, setSelectedIds] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -373,6 +375,22 @@ const CTable: React.FC<CTableProps> = ({
     URL.revokeObjectURL(url); // Clean up by releasing the object URL
   };
 
+  // Handle selection mode change
+  const handleSelectionModeChange = (newMode: SelectionMode) => {
+    // If changing from multi to single, keep only the first selected item
+    if (newMode === 'single' && selectedIds.length > 1) {
+      const newSelectedIds = [selectedIds[0]];
+      setSelectedIds(newSelectedIds);
+      onSelectionChange?.(newSelectedIds);
+    }
+    setSelectionMode(newMode);
+  };
+  
+  // Update selection mode if prop changes
+  useEffect(() => {
+    setSelectionMode(initialSelectionMode);
+  }, [initialSelectionMode]);
+
   return (
     <div className="bg-white rounded shadow-md overflow-hidden w-full h-full flex flex-col text-xs">
       <TableToolbar
@@ -383,6 +401,9 @@ const CTable: React.FC<CTableProps> = ({
         setMenuOpen={setMenuOpen}
         exportToCSV={exportToCSV}
         handleReset={handleReset}
+        allowSelectionModeChange={allowSelectionModeChange}
+        selectionMode={selectionMode}
+        onSelectionModeChange={handleSelectionModeChange}
       />
       
       {/* Updated to ensure both horizontal and vertical scrolling work properly */}
