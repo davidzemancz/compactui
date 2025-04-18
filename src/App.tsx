@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CTableDemo from './demos/CTableDemo';
 import CSideBar, { SidebarItem } from './components/CSideBar/CSideBar';
 import CFilterDemo from './demos/CFilterDemo';
+import CFilteredTable from './demos/CFilteredTable';
 
 // Home page component
 const Home: React.FC = () => (
@@ -55,6 +56,16 @@ const App: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
           )
+        },
+        {
+          id: 'filtered-table',
+          label: 'Filtered Table',
+          to: '/components/filtered-table',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          )
         }
       ]
     }
@@ -86,6 +97,7 @@ const App: React.FC = () => {
               <Route path="/" element={<Home />} />
               <Route path="/components/table" element={<CTableDemo />} />
               <Route path="/components/filter" element={<CFilterDemo />} />
+              <Route path="/components/filtered-table" element={<CFilteredTable />} />
             </Routes>
           </div>
         </main>

@@ -20,8 +20,10 @@ export interface FilterValues {
 
 export interface CFilterProps {
   fields: FilterField[];
-  onFilterChange: (values: FilterValues) => void;
+  onFilterApply: (values: FilterValues) => void;
   className?: string;
+  applyOnChange?: boolean;
+  required?: boolean;
 }
 
 export interface FilterFieldProps {

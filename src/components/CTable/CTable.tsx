@@ -417,6 +417,19 @@ const CTable: React.FC<CTableProps> = ({
           Nebyla nalezena žádná data
         </div>
       )}
+      
+      {/* Table footer with row counts */}
+      <div className="border-t border-gray-200 bg-gray-50 py-2 px-3 text-gray-600 flex justify-between items-center">
+        <div className="text-xs">
+          Celkem záznamů: <span className="font-medium">{filteredAndSortedData.length}</span>
+          {data.length !== filteredAndSortedData.length && (
+            <span className="ml-1">(z celkových {data.length})</span>
+          )}
+        </div>
+        <div className="text-xs">
+          Vybráno: <span className="font-medium">{selectedIds.length}</span>
+        </div>
+      </div>
     </div>
   );
 };

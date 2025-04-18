@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { CFilterProps, FilterField, FilterValues, FilterFieldType } from './types';
 import { TextField, NumberField, DateField, DateRangeField, SelectField, BooleanField } from './FilterFields';
 
-const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '' }) => {
+const CFilter: React.FC<CFilterProps> = ({ 
+  fields, 
+  onFilterApply, 
+  className = '',
+  applyOnChange = false,
+  required = false
+}) => {
   // Initialize filter values with defaults
   const [filterValues, setFilterValues] = useState<FilterValues>(() => {
     const initialValues: FilterValues = {};
@@ -38,10 +44,12 @@ const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '
     }
   }, [fields]);
 
-  // Notify parent component when filter values change
+  // Notify parent component when filter values change (if applyOnChange is true)
   useEffect(() => {
-    onFilterChange(filterValues);
-  }, [filterValues, onFilterChange]);
+    if (applyOnChange) {
+      onFilterApply(filterValues);
+    }
+  }, [filterValues, onFilterApply, applyOnChange]);
 
   // Handle filter field value changes
   const handleFilterChange = (id: string, value: any) => {
@@ -58,6 +66,14 @@ const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '
       resetValues[field.id] = field.defaultValue !== undefined ? field.defaultValue : null;
     });
     setFilterValues(resetValues);
+    
+    // Trigger onFilterApply with reset values
+    onFilterApply(resetValues);
+  };
+  
+  // Apply current filter values
+  const handleApplyFilters = () => {
+    onFilterApply(filterValues);
   };
 
   // Render the appropriate field component based on type
@@ -88,6 +104,13 @@ const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '
 
   return (
     <div className={`bg-white rounded shadow-md p-4 ${className}`}>
+      {/* Required message moved to the top */}
+      {required && (
+        <div className="mb-3 text-xs text-amber-600 font-medium">
+          Pro zobrazení dat zadejte filtr
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-4">
         {fields.map(field => (
           <div key={field.id} className="flex flex-col min-w-[200px]">
@@ -96,12 +119,18 @@ const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '
           </div>
         ))}
         
-        <div className="flex items-end">
+        <div className="flex items-end gap-2">
           <button
             onClick={handleResetFilters}
             className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 text-xs"
           >
-            Resetovat
+            Výchozí
+          </button>
+          <button
+            onClick={handleApplyFilters}
+            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs"
+          >
+            Zobrazit
           </button>
         </div>
       </div>
