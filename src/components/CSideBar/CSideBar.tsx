@@ -1,5 +1,6 @@
 import React, { useState, ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import CTooltip from '../CTooltip/CTooltip';
 
 // Type definitions for sidebar items
 export interface SidebarItem {
@@ -27,7 +28,7 @@ const NavLink: React.FC<{to: string, children: React.ReactNode, icon?: ReactNode
   const location = useLocation();
   const isActive = location.pathname === to;
   
-  return (
+  const linkElement = (
     <Link 
       to={to} 
       className={`px-2 py-2 rounded text-xs font-medium flex ${isCollapsed ? 'justify-center' : 'items-center'} ${
@@ -35,7 +36,6 @@ const NavLink: React.FC<{to: string, children: React.ReactNode, icon?: ReactNode
           ? 'bg-blue-100 text-blue-700' 
           : 'text-gray-600 hover:bg-gray-100'
       }`}
-      title={isCollapsed ? String(children) : ''}
     >
       {icon && (
         <span className={isCollapsed ? '' : 'mr-2'}>
@@ -45,6 +45,16 @@ const NavLink: React.FC<{to: string, children: React.ReactNode, icon?: ReactNode
       {!isCollapsed && children}
     </Link>
   );
+  
+  if (isCollapsed) {
+    return (
+      <CTooltip content={String(children)} placement="right">
+        {linkElement}
+      </CTooltip>
+    );
+  }
+  
+  return linkElement;
 };
 
 const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
@@ -109,45 +119,54 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
     const hasChildren = item.children && item.children.length > 0;
     const isExpanded = expandedItems.includes(item.id);
     
+    const itemContent = item.to ? (
+      <NavLink 
+        to={item.to} 
+        isCollapsed={isCollapsed}
+        icon={item.icon}
+      >
+        {item.label}
+      </NavLink>
+    ) : (
+      <div 
+        className={`px-2 py-2 rounded text-xs font-medium flex items-center justify-between cursor-pointer
+          ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
+        onClick={() => hasChildren && toggleExpand(item.id)}
+      >
+        <div className={`flex ${isCollapsed ? 'justify-center w-full' : 'items-center'}`}>
+          {item.icon && (
+            <span className={isCollapsed ? '' : 'mr-2'}>
+              {item.icon}
+            </span>
+          )}
+          {!isCollapsed && <span>{item.label}</span>}
+        </div>
+        {!isCollapsed && hasChildren && (
+          <span className="text-gray-400">
+            {isExpanded ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </span>
+        )}
+      </div>
+    );
+
+    // Wrap non-link items with tooltip when collapsed
+    const finalContent = !item.to && isCollapsed ? (
+      <CTooltip content={item.label} placement="right">
+        {itemContent}
+      </CTooltip>
+    ) : itemContent;
+    
     return (
       <div key={item.id} className={level > 0 ? 'mt-1' : ''}>
-        {item.to ? (
-          <NavLink 
-            to={item.to} 
-            isCollapsed={isCollapsed}
-            icon={item.icon}
-          >
-            {item.label}
-          </NavLink>
-        ) : (
-          <div 
-            className={`px-2 py-2 rounded text-xs font-medium flex items-center justify-between cursor-pointer
-              ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}
-            onClick={() => hasChildren && toggleExpand(item.id)}
-          >
-            <div className={`flex ${isCollapsed ? 'justify-center w-full' : 'items-center'}`}>
-              {item.icon && (
-                <span className={isCollapsed ? '' : 'mr-2'}>
-                  {item.icon}
-                </span>
-              )}
-              {!isCollapsed && <span>{item.label}</span>}
-            </div>
-            {!isCollapsed && hasChildren && (
-              <span className="text-gray-400">
-                {isExpanded ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                )}
-              </span>
-            )}
-          </div>
-        )}
+        {finalContent}
         
         {hasChildren && isExpanded && (
           <div className={`${isCollapsed ? 'ml-0 mt-1' : 'ml-4 mt-1'}`}>
@@ -187,16 +206,29 @@ const CSideBar: React.FC<CSideBarProps> = ({ items, title, footerItem }) => {
       
       {footerItem && (
         <div className="p-2 border-t border-gray-200 flex justify-center">
-          <a 
-            href={footerItem.href} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-700 text-xs flex items-center gap-2"
-            title={footerItem.title || footerItem.label}
-          >
-            {footerItem.icon}
-            {!isCollapsed && footerItem.label}
-          </a>
+          {isCollapsed ? (
+            <CTooltip content={footerItem.title || footerItem.label} placement="right">
+              <a 
+                href={footerItem.href} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-500 hover:text-gray-700 text-xs flex items-center gap-2"
+              >
+                {footerItem.icon}
+              </a>
+            </CTooltip>
+          ) : (
+            <a 
+              href={footerItem.href} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-gray-700 text-xs flex items-center gap-2"
+              title={footerItem.title || footerItem.label}
+            >
+              {footerItem.icon}
+              {footerItem.label}
+            </a>
+          )}
         </div>
       )}
     </aside>

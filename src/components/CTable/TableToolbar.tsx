@@ -103,12 +103,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         )}
         
         {storageKey && (
-          <CMenu
-            isOpen={menuOpen}
-            setIsOpen={setMenuOpen}
-            items={menuItems}
-            triggerAriaLabel="Table options"
-          />
+          <CTooltip content="Možnosti">
+            <div>
+              <CMenu
+                isOpen={menuOpen}
+                setIsOpen={setMenuOpen}
+                items={menuItems}
+                triggerAriaLabel="Table options"
+              />
+            </div>
+          </CTooltip>
         )}
       </div>
     </div>
