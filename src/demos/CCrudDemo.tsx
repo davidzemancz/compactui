@@ -400,9 +400,7 @@ const CCrudDemo: React.FC = () => {
   };
   
   return (
-    <div className="space-y-4 h-full flex flex-col">
-      <h1 className="text-xs font-bold mb-4">CRUD Demo</h1>
-      
+    <div className="space-y-2 h-full flex flex-col">
       {crudAction === CrudAction.None ? (
         // Main UI - Table with filters and toolbar
         <>
@@ -412,7 +410,7 @@ const CCrudDemo: React.FC = () => {
               fields={filterFields}
               onFilterApply={setAppliedFilters}
               required={filteredUsers.length === 0 && users.length > 0}
-              className="p-3"
+              className="p-2"
             />
           </div>
           
@@ -431,11 +429,6 @@ const CCrudDemo: React.FC = () => {
                 allowSelectionModeChange={true}
               />
             </div>
-          </div>
-          
-          {/* Status bar */}
-          <div className="bg-white p-2 rounded shadow text-xs text-gray-500">
-            Celkem uživatelů: {users.length} | Zobrazeno: {filteredUsers.length} | Vybráno: {selectedUsers.length}
           </div>
         </>
       ) : (
