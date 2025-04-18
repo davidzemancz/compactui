@@ -11,21 +11,19 @@ export interface WizardStep {
   title: string;
   description?: string;
   component: React.ReactNode;
-  validate?: (stepData: any) => ValidationResult | boolean | Promise<ValidationResult | boolean>;
+  validate?: () => ValidationResult | boolean | Promise<ValidationResult | boolean>;
 }
 
 export interface WizardStepComponentProps {
-  formData: any;
-  updateFormData: (data: any) => void;
   stepIndex: number;
   totalSteps: number;
+  validate?: () => boolean | Promise<boolean>;
 }
 
 export interface CWizardProps {
   steps: WizardStep[];
-  onComplete: (data: any) => void;
+  onComplete: () => void;
   onCancel: () => void;
-  initialData?: any;
   loading?: boolean;
   nextLabel?: string;
   prevLabel?: string;

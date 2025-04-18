@@ -459,14 +459,26 @@ const CCrudDemo: React.FC = () => {
   
   // Create a common interface for wizard step props
   interface WizardStepProps {
-    formData: Partial<User>;
-    updateFormData: (data: Partial<User>) => void;
+    stepIndex: number;
+    totalSteps: number;
   }
 
   // Components for wizard steps - standardized with proper typing and using CForm
-  const BasicInfoStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+  const BasicInfoStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
+    
+    // Use the parent component's state
+    const currentData = useMemo(() => (window as any).__wizardData || {}, []);
+    const [localData, setLocalData] = useState(currentData);
+    
+    // Sync local data with the global data source
+    useEffect(() => {
+      (window as any).__wizardData = {
+        ...(window as any).__wizardData,
+        ...localData
+      };
+    }, [localData]);
     
     const validateName = (value: string) => {
       if (!value.trim()) {
@@ -497,7 +509,17 @@ const CCrudDemo: React.FC = () => {
       if (id === 'email') {
         validateEmail(value);
       }
-      updateFormData({ [id]: value });
+      setLocalData(prev => ({
+        ...prev,
+        [id]: value
+      }));
+    };
+    
+    // Implement validate function attached to the component instance
+    (BasicInfoStep as any).validate = () => {
+      const isNameValid = validateName(localData.name || '');
+      const isEmailValid = validateEmail(localData.email || '');
+      return isNameValid && isEmailValid;
     };
     
     const fields: FormField[] = [
@@ -505,7 +527,7 @@ const CCrudDemo: React.FC = () => {
         id: 'name',
         name: 'Jméno',
         type: 'text',
-        value: formData.name || '',
+        value: localData.name || '',
         onChange: (value) => handleFieldChange('name', value),
         required: true,
         state: nameError ? 'error' : undefined,
@@ -516,7 +538,7 @@ const CCrudDemo: React.FC = () => {
         id: 'email',
         name: 'Email',
         type: 'text',
-        value: formData.email || '',
+        value: localData.email || '',
         onChange: (value) => handleFieldChange('email', value),
         required: true,
         state: emailError ? 'error' : undefined,
@@ -528,9 +550,24 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const PermissionsStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+  const PermissionsStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+    // Use local state that syncs with the global state
+    const currentData = useMemo(() => (window as any).__wizardData || {}, []);
+    const [localData, setLocalData] = useState(currentData);
+    
+    // Sync local data with the global data source
+    useEffect(() => {
+      (window as any).__wizardData = {
+        ...(window as any).__wizardData,
+        ...localData
+      };
+    }, [localData]);
+    
     const handleFieldChange = (id: string, value: any) => {
-      updateFormData({ [id]: value });
+      setLocalData(prev => ({
+        ...prev,
+        [id]: value
+      }));
     };
     
     const fields: FormField[] = [
@@ -538,7 +575,7 @@ const CCrudDemo: React.FC = () => {
         id: 'role',
         name: 'Role',
         type: 'select',
-        value: formData.role || 'User',
+        value: localData.role || 'User',
         onChange: (value) => handleFieldChange('role', value),
         options: getUserRoleOptions(),
         help: 'Oprávnění uživatele'
@@ -547,7 +584,7 @@ const CCrudDemo: React.FC = () => {
         id: 'active',
         name: 'Status účtu',
         type: 'boolean',
-        value: formData.active !== undefined ? formData.active : true,
+        value: localData.active !== undefined ? localData.active : true,
         onChange: (value) => handleFieldChange('active', value),
         help: 'Aktivní stav účtu uživatele'
       }
@@ -556,11 +593,26 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const DatesStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+  const DatesStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
     const today = new Date().toISOString().slice(0, 10);
     
+    // Use local state that syncs with the global state
+    const currentData = useMemo(() => (window as any).__wizardData || {}, []);
+    const [localData, setLocalData] = useState(currentData);
+    
+    // Sync local data with the global data source
+    useEffect(() => {
+      (window as any).__wizardData = {
+        ...(window as any).__wizardData,
+        ...localData
+      };
+    }, [localData]);
+    
     const handleFieldChange = (id: string, value: any) => {
-      updateFormData({ [id]: value });
+      setLocalData(prev => ({
+        ...prev,
+        [id]: value
+      }));
     };
     
     const fields: FormField[] = [
@@ -568,7 +620,7 @@ const CCrudDemo: React.FC = () => {
         id: 'joined',
         name: 'Datum registrace',
         type: 'date',
-        value: formData.joined || today,
+        value: localData.joined || today,
         onChange: (value) => handleFieldChange('joined', value),
         help: 'Datum vytvoření účtu'
       },
@@ -576,7 +628,7 @@ const CCrudDemo: React.FC = () => {
         id: 'lastLogin',
         name: 'Poslední přihlášení',
         type: 'date',
-        value: formData.lastLogin || today,
+        value: localData.lastLogin || today,
         onChange: (value) => handleFieldChange('lastLogin', value),
         help: 'Datum posledního přihlášení'
       }
@@ -585,7 +637,10 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const SummaryStep: React.FC<WizardStepProps> = ({ formData }) => {
+  const SummaryStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+    // Use the parent component's state without modifying it
+    const currentData = useMemo(() => (window as any).__wizardData || {}, []);
+    
     return (
       <div className="space-y-4">
         <h3 className="text-xs font-medium text-gray-700">Shrnutí informací</h3>
@@ -593,22 +648,22 @@ const CCrudDemo: React.FC = () => {
         <div className="bg-gray-50 p-3 rounded border border-gray-200">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
             <dt className="text-xs font-medium text-gray-500">Jméno:</dt>
-            <dd className="text-xs text-gray-700">{formData.name}</dd>
+            <dd className="text-xs text-gray-700">{currentData.name}</dd>
             
             <dt className="text-xs font-medium text-gray-500">Email:</dt>
-            <dd className="text-xs text-gray-700">{formData.email}</dd>
+            <dd className="text-xs text-gray-700">{currentData.email}</dd>
             
             <dt className="text-xs font-medium text-gray-500">Role:</dt>
-            <dd className="text-xs text-gray-700">{formData.role}</dd>
+            <dd className="text-xs text-gray-700">{currentData.role}</dd>
             
             <dt className="text-xs font-medium text-gray-500">Status:</dt>
-            <dd className="text-xs text-gray-700">{formData.active ? 'Aktivní' : 'Neaktivní'}</dd>
+            <dd className="text-xs text-gray-700">{currentData.active ? 'Aktivní' : 'Neaktivní'}</dd>
             
             <dt className="text-xs font-medium text-gray-500">Datum registrace:</dt>
-            <dd className="text-xs text-gray-700">{formData.joined}</dd>
+            <dd className="text-xs text-gray-700">{currentData.joined}</dd>
             
             <dt className="text-xs font-medium text-gray-500">Poslední přihlášení:</dt>
-            <dd className="text-xs text-gray-700">{formData.lastLogin}</dd>
+            <dd className="text-xs text-gray-700">{currentData.lastLogin}</dd>
           </dl>
         </div>
         
@@ -626,26 +681,16 @@ const CCrudDemo: React.FC = () => {
       title: 'Základní informace',
       description: 'Zadejte jméno a email uživatele.',
       component: <BasicInfoStep />,
-      validate: (stepData) => {
-        if (!stepData.name?.trim()) {
-          return { valid: false, message: 'Prosím vyplňte jméno.' };
-        }
-        if (!stepData.email?.trim()) {
-          return { valid: false, message: 'Prosím vyplňte email.' };
-        }
-        if (!/^\S+@\S+\.\S+$/.test(stepData.email)) {
-          return { valid: false, message: 'Prosím zadejte platný email.' };
-        }
-        return { valid: true };
-      }
+      validate: () => (BasicInfoStep as any).validate()
     },
     {
       id: 'permissions',
       title: 'Oprávnění',
       description: 'Nastavte roli a status účtu.',
       component: <PermissionsStep />,
-      validate: (stepData) => {
-        if (!stepData.role) {
+      validate: () => {
+        const data = (window as any).__wizardData || {};
+        if (!data.role) {
           return { valid: false, message: 'Prosím vyberte roli.' };
         }
         return { valid: true };
@@ -656,11 +701,12 @@ const CCrudDemo: React.FC = () => {
       title: 'Časové údaje',
       description: 'Nastavte datumy registrace a posledního přihlášení.',
       component: <DatesStep />,
-      validate: (stepData) => {
-        if (!stepData.joined) {
+      validate: () => {
+        const data = (window as any).__wizardData || {};
+        if (!data.joined) {
           return { valid: false, message: 'Prosím vyberte datum registrace.' };
         }
-        if (!stepData.lastLogin) {
+        if (!data.lastLogin) {
           return { valid: false, message: 'Prosím vyberte datum posledního přihlášení.' };
         }
         return { valid: true };
@@ -725,11 +771,15 @@ const CCrudDemo: React.FC = () => {
           title="Přidat nového uživatele"
           position="right"
         >
+          {/* Initialize the wizard data in the window object for demo purposes */}
+          {(() => {
+            (window as any).__wizardData = currentUser || {};
+            return null;
+          })()}
           <CWizard
             steps={wizardSteps}
-            onComplete={handleWizardComplete}
+            onComplete={() => handleWizardComplete((window as any).__wizardData)}
             onCancel={handleWizardCancel}
-            initialData={currentUser || {}}
             loading={formLoading}
             className="border-0 shadow-none"
           />

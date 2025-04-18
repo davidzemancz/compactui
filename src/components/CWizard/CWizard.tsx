@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import WizardStepIndicator from './WizardStepIndicator';
 import { CWizardProps } from './types';
 
@@ -6,7 +6,6 @@ const CWizard: React.FC<CWizardProps> = ({
   steps,
   onComplete,
   onCancel,
-  initialData = {},
   loading = false,
   nextLabel = 'Další',
   prevLabel = 'Zpět',
@@ -15,24 +14,10 @@ const CWizard: React.FC<CWizardProps> = ({
   className = ''
 }) => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [formData, setFormData] = useState(initialData);
   const [isValidating, setIsValidating] = useState(false);
   
   const currentStep = steps[currentStepIndex];
   const isLastStep = currentStepIndex === steps.length - 1;
-  
-  // Update form data when initialData reference changes
-  useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
-  
-  // Function to update form data - useCallback to prevent recreation on each render
-  const updateFormData = useCallback((newData: any) => {
-    setFormData(prevData => ({
-      ...prevData,
-      ...newData
-    }));
-  }, []);
   
   // Handle moving to the next step
   const handleNext = async () => {
@@ -40,8 +25,22 @@ const CWizard: React.FC<CWizardProps> = ({
     if (currentStep.validate) {
       setIsValidating(true);
       try {
-        // Pass the current formData to the validate function
-        const isValid = await currentStep.validate(formData);
+        // Call the validate function without passing any data
+        const validationResult = await currentStep.validate();
+        
+        // Handle boolean or ValidationResult
+        let isValid = false;
+        if (typeof validationResult === 'boolean') {
+          isValid = validationResult;
+        } else {
+          isValid = validationResult.valid;
+          
+          // If validation failed with a message, you could display it here
+          if (!isValid && validationResult.message) {
+            console.warn(`Validation failed: ${validationResult.message}`);
+          }
+        }
+        
         if (!isValid) {
           setIsValidating(false);
           return;
@@ -55,7 +54,7 @@ const CWizard: React.FC<CWizardProps> = ({
     }
     
     if (isLastStep) {
-      onComplete(formData);
+      onComplete();
     } else {
       setCurrentStepIndex(prevIndex => prevIndex + 1);
     }
@@ -73,13 +72,13 @@ const CWizard: React.FC<CWizardProps> = ({
     }
   };
   
-  // Clone the component with formData and updateFormData props
+  // Render the current step with stepIndex and totalSteps
   const renderCurrentStep = () => {
     if (!currentStep) return null;
     
     return React.cloneElement(currentStep.component as React.ReactElement, {
-      formData,
-      updateFormData
+      stepIndex: currentStepIndex,
+      totalSteps: steps.length
     });
   };
   
