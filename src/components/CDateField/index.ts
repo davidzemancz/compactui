@@ -1,3 +1,3 @@
-import CDateField, { CDateFieldProps } from './CDateField';
-export { CDateFieldProps };
+import CDateField from './CDateField';
+export type { CDateFieldProps } from './CDateField';
 export default CDateField;

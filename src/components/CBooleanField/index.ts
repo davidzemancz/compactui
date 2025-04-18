@@ -1,3 +1,3 @@
-import CBooleanField, { CBooleanFieldProps } from './CBooleanField';
-export { CBooleanFieldProps };
+import CBooleanField from './CBooleanField';
+export type { CBooleanFieldProps } from './CBooleanField';
 export default CBooleanField;
