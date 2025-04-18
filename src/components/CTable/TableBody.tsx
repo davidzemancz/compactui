@@ -31,26 +31,53 @@ const TableBody: React.FC<TableBodyProps> = ({
             className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''} ${data.indexOf(row) % 2 === 0 ? 'bg-gray-50/30' : ''}`}
             onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
           >
-            <td 
-              className="w-10 p-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelectRow(rowId, !isSelected);
-              }}
-            >
-              <div className="flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onSelectRow(rowId, e.target.checked);
-                  }}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            </td>
+            {selectionMode === 'multi' && (
+              <td 
+                className="w-10 p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectRow(rowId, !isSelected);
+                }}
+              >
+                <div className="flex items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onSelectRow(rowId, e.target.checked);
+                    }}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              </td>
+            )}
+            {selectionMode === 'single' && (
+              <td 
+                className="w-10 p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectRow(rowId);
+                }}
+              >
+                <div className="flex items-center justify-center">
+                  <input
+                    type="radio"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      if (e.target.checked) {
+                        onSelectRow(rowId);
+                      }
+                    }}
+                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                    onClick={(e) => e.stopPropagation()}
+                    name="table-row-selection"
+                  />
+                </div>
+              </td>
+            )}
             {orderedColumns.map((column) => (
               <td 
                 key={`${rowId}-${column.key}`}

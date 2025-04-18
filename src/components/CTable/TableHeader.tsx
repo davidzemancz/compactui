@@ -125,7 +125,9 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
           </th>
         )}
         {selectionMode === 'single' && (
-          <th className="w-10 p-2 bg-gray-50 sticky top-0 z-20"></th>
+          <th className="w-10 p-2 bg-gray-50 sticky top-0 z-20">
+            {/* Empty header cell for radio buttons column */}
+          </th>
         )}
         {orderedColumns.map((column, index) => (
           <th 
