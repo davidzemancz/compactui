@@ -462,6 +462,10 @@ const CTable: React.FC<CTableProps> = ({
         allowSelectionModeChange={allowSelectionModeChange}
         selectionMode={selectionMode}
         onSelectionModeChange={handleSelectionModeChange}
+        // Pass count information to toolbar
+        selectedCount={selectedIds.length}
+        totalCount={data.length}
+        filteredCount={filteredAndSortedData.length}
       />
       
       {/* Updated to ensure both horizontal and vertical scrolling work properly */}
@@ -498,18 +502,7 @@ const CTable: React.FC<CTableProps> = ({
         </div>
       )}
       
-      {/* Table footer with row counts */}
-      <div className="border-t border-gray-200 bg-gray-50 py-2 px-3 text-gray-600 flex justify-between items-center">
-        <div className="text-xs">
-          Celkem záznamů: <span className="font-medium">{filteredAndSortedData.length}</span>
-          {data.length !== filteredAndSortedData.length && (
-            <span className="ml-1">(z celkových {data.length})</span>
-          )}
-        </div>
-        <div className="text-xs">
-          Vybráno: <span className="font-medium">{selectedIds.length}</span>
-        </div>
-      </div>
+      {/* Remove the footer - we now show counts in the toolbar */}
     </div>
   );
 };

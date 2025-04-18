@@ -16,6 +16,10 @@ interface TableToolbarProps {
   allowSelectionModeChange?: boolean;
   selectionMode: SelectionMode;
   onSelectionModeChange: (mode: SelectionMode) => void;
+  // Add new props for counts
+  selectedCount: number;
+  totalCount: number;
+  filteredCount: number;
 }
 
 const TableToolbar: React.FC<TableToolbarProps> = ({
@@ -28,7 +32,11 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   handleReset,
   allowSelectionModeChange = false,
   selectionMode,
-  onSelectionModeChange
+  onSelectionModeChange,
+  // Use the new props
+  selectedCount,
+  totalCount,
+  filteredCount
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const menuItems = [
@@ -54,12 +62,22 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
 
   return (
     <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200 flex-shrink-0 relative z-30">
-      <CTextInput
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder="Hledat v seznamu..."
-        className="w-60"
-      />
+      <div className="flex items-center gap-3">
+        <CTextInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Hledat v seznamu..."
+          className="w-60"
+        />
+        
+        {/* Add the counts display */}
+        <div className="text-gray-600 text-xs">
+          Vybráno <span className="font-medium">{selectedCount}</span>/{filteredCount}
+          {totalCount !== filteredCount && (
+            <span className="ml-1">(z celkových {totalCount})</span>
+          )}
+        </div>
+      </div>
       
       <div className="flex items-center gap-2">
         {allowSelectionModeChange && (
