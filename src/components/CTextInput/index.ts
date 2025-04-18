@@ -1,3 +1,3 @@
-import CTextInput, { CTextInputProps } from './CTextInput';
-export { CTextInputProps };
+import CTextInput from './CTextInput';
+export type { CTextInputProps } from './CTextInput';
 export default CTextInput;

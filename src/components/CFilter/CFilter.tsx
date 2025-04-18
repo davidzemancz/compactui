@@ -140,4 +140,5 @@ const CFilter: React.FC<CFilterProps> = ({
   );
 };
 
+// Make sure the export is properly defined at the bottom of the file
 export default CFilter;
