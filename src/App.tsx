@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CTableDemo from './demos/CTableDemo';
 import CSideBar, { SidebarItem } from './components/CSideBar/CSideBar';
 import CFilterDemo from './demos/CFilterDemo';
-import CFilteredTable from './demos/CFilteredTable';
+import CFilteredTableDemo from './demos/CFilteredTableDemo';
 
 // Home page component
 const Home: React.FC = () => (
@@ -90,14 +90,14 @@ const App: React.FC = () => {
           footerItem={githubFooter}
         />
 
-        {/* Main Content */}
-        <main className="flex-1 p-6 overflow-hidden">
+        {/* Main Content - Updated overflow handling */}
+        <main className="flex-1 p-6 overflow-x-auto overflow-y-auto">
           <div className="h-full mx-auto max-w-6xl">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/components/table" element={<CTableDemo />} />
               <Route path="/components/filter" element={<CFilterDemo />} />
-              <Route path="/components/filtered-table" element={<CFilteredTable />} />
+              <Route path="/components/filtered-table" element={<CFilteredTableDemo />} />
             </Routes>
           </div>
         </main>

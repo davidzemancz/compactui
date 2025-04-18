@@ -41,7 +41,8 @@ const generateUsers = (count: number): User[] => {
     });
 };
 
-const CFilteredTable: React.FC = () => {
+// Renamed from CFilteredTable to CFilteredTableDemo
+const CFilteredTableDemo: React.FC = () => {
     // Generate sample data
     const allUsers = useMemo(() => generateUsers(100), []);
 
@@ -136,19 +137,18 @@ const CFilteredTable: React.FC = () => {
 
     return (
         <div className="space-y-4">
-
-            {/* Filter section - Made more compact */}
-            <div>
+            {/* Filter section - Remove horizontal scrolling */}
+            <div className="overflow-hidden">
                 <CFilter
                     fields={filterFields}
                     onFilterApply={setAppliedFilters}
                     required={filteredUsers.length === 0 && allUsers.length > 0}
-                    className="p-3" // Reduced padding
+                    className="p-3" // Remove min-width
                 />
             </div>
 
-            {/* Table section - Increased height */}
-            <div className="h-[calc(100vh-220px)] bg-white rounded shadow overflow-hidden">
+            {/* Table section - Improved scrolling */}
+            <div className="h-[calc(100vh-220px)] bg-white rounded shadow overflow-x-auto overflow-y-auto">
                 <CTable
                     columns={columns}
                     data={filteredUsers}
@@ -156,10 +156,11 @@ const CFilteredTable: React.FC = () => {
                     onSelectionChange={setSelectedUsers}
                     onLinkClicked={handleLinkClick}
                     storageKey="filtered-users-table"
+                    stickyFooter={true}
                 />
             </div>
         </div>
     );
 };
 
-export default CFilteredTable;
+export default CFilteredTableDemo;

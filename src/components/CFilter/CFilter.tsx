@@ -111,15 +111,16 @@ const CFilter: React.FC<CFilterProps> = ({
         </div>
       )}
 
+      {/* Ensure filter content wraps properly without horizontal scrolling */}
       <div className="flex flex-wrap gap-4">
         {fields.map(field => (
-          <div key={field.id} className="flex flex-col min-w-[200px]">
-            <label className="mb-1 text-xs text-gray-700 font-medium">{field.label}</label>
+          <div key={field.id} className="flex flex-col min-w-[180px] max-w-full">
+            <label className="mb-1 text-xs text-gray-700 font-medium truncate">{field.label}</label>
             {renderField(field)}
           </div>
         ))}
         
-        <div className="flex flex-col min-w-[200px] justify-end">
+        <div className="flex flex-col justify-end">
           <div className="flex gap-2">
             <button
               onClick={handleResetFilters}
