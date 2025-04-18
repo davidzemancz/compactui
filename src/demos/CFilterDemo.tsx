@@ -64,7 +64,7 @@ const CFilterDemo: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold mb-4">CFilter Component</h1>
+      <h1 className="text-xs font-bold mb-4">CFilter Component</h1>
 
       {/* Component Demo */}
       <div className="p-4 bg-white rounded-lg shadow-md mb-6">
@@ -76,13 +76,13 @@ const CFilterDemo: React.FC = () => {
       
       {/* Description and Features */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Overview</h2>
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-xs font-semibold mb-3">Overview</h2>
+        <p className="text-xs text-gray-700 mb-4">
           A flexible filter component that supports multiple field types and can be used to filter data in tables and lists.
         </p>
         
-        <h3 className="text-lg font-semibold mb-2">Features</h3>
-        <ul className="list-disc pl-5 space-y-1 text-gray-700 mb-4">
+        <h3 className="text-xs font-semibold mb-2">Features</h3>
+        <ul className="list-disc pl-5 space-y-1 text-xs text-gray-700 mb-4">
           <li>Supports multiple input types: text, number, boolean, select, date ranges</li>
           <li>Customizable field definitions</li>
           <li>Real-time filter updates</li>
@@ -93,8 +93,8 @@ const CFilterDemo: React.FC = () => {
       
       {/* Current Filter Values Display */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Current Filter Values</h2>
-        <div className="bg-white rounded-lg shadow-md p-4 text-sm">
+        <h2 className="text-xs font-semibold mb-3">Current Filter Values</h2>
+        <div className="bg-white rounded-lg shadow-md p-4 text-xs">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
               <tr>
@@ -105,15 +105,15 @@ const CFilterDemo: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-100">
               {Object.entries(filterValues).map(([key, value]) => (
                 <tr key={key}>
-                  <td className="px-4 py-2 whitespace-nowrap font-medium">{key}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap text-xs font-medium">{key}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-xs">
                     {formatFilterValue(key, value)}
                   </td>
                 </tr>
               ))}
               {Object.keys(filterValues).length === 0 && (
                 <tr>
-                  <td colSpan={2} className="px-4 py-2 text-center text-gray-500 italic">
+                  <td colSpan={2} className="px-4 py-2 text-center text-xs text-gray-500 italic">
                     No filters applied
                   </td>
                 </tr>
@@ -125,12 +125,12 @@ const CFilterDemo: React.FC = () => {
       
       {/* Code Examples */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Usage Examples</h2>
+        <h2 className="text-xs font-semibold mb-3">Usage Examples</h2>
         
         <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Basic Usage</h3>
+          <h3 className="text-xs font-medium mb-2">Basic Usage</h3>
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-sm overflow-x-auto">
+            <pre className="text-xs overflow-x-auto">
 {`import { CFilter } from 'compactui';
 import { useState } from 'react';
 
@@ -155,9 +155,9 @@ function MyFilterComponent() {
         </div>
         
         <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Integration with Tables</h3>
+          <h3 className="text-xs font-medium mb-2">Integration with Tables</h3>
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-sm overflow-x-auto">
+            <pre className="text-xs overflow-x-auto">
 {`// Filter your data based on filter values
 const filteredData = data.filter(item => {
   return Object.entries(filterValues).every(([key, value]) => {

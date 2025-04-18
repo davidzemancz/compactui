@@ -66,15 +66,15 @@ const CTableDemo: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold mb-4">CTable Component</h1>
+      <h1 className="text-xs font-bold mb-4">CTable Component</h1>
 
       {/* Component Demo */}
       <div className="p-4 bg-white rounded-lg shadow-md mb-6">
         <div className="mb-3">
           <div className="flex items-center space-x-2 mb-1">
-            <span className="text-sm font-medium text-gray-700">Selection Mode:</span>
+            <span className="text-xs font-medium text-gray-700">Selection Mode:</span>
             <select 
-              className="text-sm border border-gray-300 rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="text-xs border border-gray-300 rounded p-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
               value={selectedMode}
               onChange={(e) => setSelectedMode(e.target.value as SelectionMode)}
             >
@@ -98,13 +98,13 @@ const CTableDemo: React.FC = () => {
       
       {/* Description and Features */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Overview</h2>
-        <p className="text-gray-700 mb-4">
+        <h2 className="text-xs font-semibold mb-3">Overview</h2>
+        <p className="text-xs text-gray-700 mb-4">
           A powerful and flexible data table component with built-in sorting, selection, and column customization capabilities.
         </p>
         
-        <h3 className="text-lg font-semibold mb-2">Features</h3>
-        <ul className="list-disc pl-5 space-y-1 text-gray-700 mb-4">
+        <h3 className="text-xs font-semibold mb-2">Features</h3>
+        <ul className="list-disc pl-5 space-y-1 text-xs text-gray-700 mb-4">
           <li>Multiple data types with appropriate formatting</li>
           <li>Column sorting and reordering</li>
           <li>Single and multi-row selection</li>
@@ -117,26 +117,26 @@ const CTableDemo: React.FC = () => {
       
       {/* Selected Items Display */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Selected Items</h2>
-        <div className="bg-white rounded-lg shadow-md p-4 text-sm">
+        <h2 className="text-xs font-semibold mb-3">Selected Items</h2>
+        <div className="bg-white rounded-lg shadow-md p-4 text-xs">
           {selectedIds.length > 0 ? (
             <div>
               <p>Selected IDs: {selectedIds.join(', ')}</p>
             </div>
           ) : (
-            <p className="text-center text-gray-500 italic">No items selected</p>
+            <p className="text-center text-xs text-gray-500 italic">No items selected</p>
           )}
         </div>
       </div>
       
       {/* Code Examples */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-3">Usage Examples</h2>
+        <h2 className="text-xs font-semibold mb-3">Usage Examples</h2>
         
         <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Basic Usage</h3>
+          <h3 className="text-xs font-medium mb-2">Basic Usage</h3>
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-sm overflow-x-auto">
+            <pre className="text-xs overflow-x-auto">
 {`import { CTable } from 'compactui';
 
 function MyTableComponent() {
@@ -158,9 +158,9 @@ function MyTableComponent() {
         </div>
         
         <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Selection Mode</h3>
+          <h3 className="text-xs font-medium mb-2">Selection Mode</h3>
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-sm overflow-x-auto">
+            <pre className="text-xs overflow-x-auto">
 {`import { CTable } from 'compactui';
 import { useState } from 'react';
 
@@ -194,9 +194,9 @@ function SelectableTable() {
         </div>
         
         <div className="mb-4">
-          <h3 className="text-lg font-medium mb-2">Custom Link Handling</h3>
+          <h3 className="text-xs font-medium mb-2">Custom Link Handling</h3>
           <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <pre className="text-sm overflow-x-auto">
+            <pre className="text-xs overflow-x-auto">
 {`import { CTable } from 'compactui';
 
 function TableWithLinks() {

@@ -7,8 +7,8 @@ import CFilterDemo from './demos/CFilterDemo';
 // Home page component
 const Home: React.FC = () => (
   <div className="bg-white rounded-lg shadow p-4">
-    <h1 className="text-xl font-bold mb-2">Welcome to CompactUI</h1>
-    <p className="text-sm text-gray-600">
+    <h1 className="text-xl font-bold mb-2 text-xs">Welcome to CompactUI</h1>
+    <p className="text-xs text-gray-600">
       A lightweight UI component library for React applications.
     </p>
   </div>
@@ -72,7 +72,7 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen h-screen bg-gray-50 font-sans text-sm flex">
+      <div className="min-h-screen h-screen bg-gray-50 font-sans text-xs flex">
         <CSideBar 
           items={sidebarItems} 
           title="CompactUI" 

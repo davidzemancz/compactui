@@ -99,7 +99,7 @@ const CFilter: React.FC<CFilterProps> = ({ fields, onFilterChange, className = '
         <div className="flex items-end">
           <button
             onClick={handleResetFilters}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300"
+            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 text-xs"
           >
             Resetovat
           </button>
