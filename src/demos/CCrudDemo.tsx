@@ -163,8 +163,8 @@ const CCrudDemo: React.FC = () => {
   // Table column definitions
   const columns: Column[] = useMemo(() => [
     { key: 'id', header: 'ID', dataType: 'int' },
-    { key: 'name', header: 'Jméno', dataType: 'string' },
-    { key: 'email', header: 'Email', dataType: 'link', linkText: 'Odeslat email' },
+    { key: 'name', header: 'Jméno', dataType: 'link' }, // Simplified link column
+    { key: 'email', header: 'Email', dataType: 'link' }, // Simplified link column
     { key: 'role', header: 'Role', dataType: 'string' },
     { key: 'active', header: 'Aktivní', dataType: 'bool' },
     { key: 'joined', header: 'Registrace', dataType: 'datetime', dateFormat: 'yyyy-MM-dd' },
@@ -236,12 +236,21 @@ const CCrudDemo: React.FC = () => {
     setFilteredUsers(filtered);
   }, [users, appliedFilters]);
   
-  // Table link click handler
+  // Table link click handler - updated to handle name column clicks
   const handleLinkClick = useCallback((rowId: any, columnKey: string, value: any) => {
     if (columnKey === 'email') {
       window.location.href = `mailto:${value}`;
+    } else if (columnKey === 'name') {
+      // When name is clicked, open the edit drawer
+      const user = users.find(u => u.id === rowId);
+      if (user) {
+        setCrudAction(CrudAction.Edit);
+        setCurrentUser({ ...user });
+        setEditingUserId(user.id);
+        setIsDrawerOpen(true);
+      }
     }
-  }, []);
+  }, [users]);
   
   // Create toolbar items with memoization
   const toolbarItems: ToolBarItemOrSeparator[] = useMemo(() => [

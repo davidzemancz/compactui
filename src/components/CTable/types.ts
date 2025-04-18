@@ -8,7 +8,7 @@ export interface Column {
   dataType?: ColumnDataType;
   dateFormat?: string;
   width?: number;
-  linkText?: string; // Optional text to display for links (if different from value)
+  // Remove linkText property as we'll always display the actual value
 }
 
 export interface CTableProps {

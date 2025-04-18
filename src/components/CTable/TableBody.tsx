@@ -118,7 +118,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                       }
                     }}
                   >
-                    {column.linkText || row[column.key]}
+                    {row[column.key]} {/* Always show the actual value */}
                   </a>
                 ) : formatCellValue(
                   row[column.key], 
