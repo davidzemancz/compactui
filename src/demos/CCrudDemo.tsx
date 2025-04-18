@@ -424,7 +424,6 @@ const CCrudDemo: React.FC = () => {
         submitLabel="Uložit"
         cancelLabel="Zrušit"
         onCancel={handleFormCancel}
-        width={500}
       />
     </div>
   );

@@ -9,6 +9,7 @@ export interface CDrawerProps {
   closeOnClickOutside?: boolean;
   closeOnEsc?: boolean;
   position?: 'left' | 'right';
+  responsive?: boolean; // Add responsive prop
 }
 
 const CDrawer: React.FC<CDrawerProps> = ({
@@ -48,8 +49,10 @@ const CDrawer: React.FC<CDrawerProps> = ({
     };
   }, [isOpen]);
 
-  // Calculate width style
-  const widthStyle = typeof width === 'number' ? `${width}px` : width;
+  // Modified to always use responsive behavior
+  const getWidthStyle = () => {
+    return 'w-full sm:w-full md:max-w-lg lg:max-w-xl';
+  };
 
   // Get position classes based on position prop
   const positionClasses = position === 'left' 
@@ -66,8 +69,7 @@ const CDrawer: React.FC<CDrawerProps> = ({
       
       {/* Drawer */}
       <div 
-        className={`absolute inset-y-0 ${positionClasses} duration-300 transition-transform ${isOpen ? 'transform-none' : ''}`}
-        style={{ width: widthStyle }}
+        className={`absolute inset-y-0 ${positionClasses} duration-300 transition-transform ${isOpen ? 'transform-none' : ''} ${getWidthStyle()}`}
         ref={drawerRef}
       >
         <div className="h-full bg-white flex flex-col shadow-xl">
