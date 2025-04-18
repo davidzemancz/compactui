@@ -15,6 +15,7 @@ export interface CTableProps {
   columns: Column[];
   data: any[];
   selectionMode?: SelectionMode;
+  selectedIds?: any[]; // Added prop for controlled selection
   onSelectionChange?: (selectedIds: any[]) => void;
   onLinkClicked?: (rowId: any, columnKey: string, value: any) => void;
   storageKey?: string;

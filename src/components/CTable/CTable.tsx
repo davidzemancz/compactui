@@ -11,6 +11,7 @@ const CTable: React.FC<CTableProps> = ({
   columns, 
   data,
   selectionMode: initialSelectionMode = 'single',
+  selectedIds: externalSelectedIds,
   onSelectionChange,
   onLinkClicked,
   storageKey,
@@ -18,7 +19,14 @@ const CTable: React.FC<CTableProps> = ({
 }) => {
   // Add state to track the current selection mode
   const [selectionMode, setSelectionMode] = useState<SelectionMode>(initialSelectionMode);
-  const [selectedIds, setSelectedIds] = useState<any[]>([]);
+  // Internal state for uncontrolled mode
+  const [internalSelectedIds, setInternalSelectedIds] = useState<any[]>([]);
+  
+  // Determine if we're in controlled or uncontrolled mode
+  const isControlled = externalSelectedIds !== undefined;
+  // Use the appropriate selectedIds based on controlled/uncontrolled mode
+  const selectedIds = isControlled ? externalSelectedIds : internalSelectedIds;
+  
   // Add state to track the last selected row for shift-click functionality
   const [lastSelectedId, setLastSelectedId] = useState<any | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
@@ -202,7 +210,7 @@ const CTable: React.FC<CTableProps> = ({
     });
   };
 
-  // Selection handlers
+  // Selection handlers updated to work with controlled/uncontrolled modes
   const handleSelectRow = (id: any, selected?: boolean, event?: React.MouseEvent) => {
     let newSelectedIds: any[];
     
@@ -262,13 +270,24 @@ const CTable: React.FC<CTableProps> = ({
       newSelectedIds = [...selectedIds];
     }
     
-    setSelectedIds(newSelectedIds);
+    // Only update internal state if we're in uncontrolled mode
+    if (!isControlled) {
+      setInternalSelectedIds(newSelectedIds);
+    }
+    
+    // Always call the onSelectionChange callback
     onSelectionChange?.(newSelectedIds);
   };
 
   const handleSelectAll = (selected: boolean) => {
     const newSelectedIds = selected ? filteredAndSortedData.map(row => row.id) : [];
-    setSelectedIds(newSelectedIds);
+    
+    // Only update internal state if we're in uncontrolled mode
+    if (!isControlled) {
+      setInternalSelectedIds(newSelectedIds);
+    }
+    
+    // Always call the onSelectionChange callback
     onSelectionChange?.(newSelectedIds);
   };
 
@@ -414,7 +433,12 @@ const CTable: React.FC<CTableProps> = ({
     // If changing from multi to single, keep only the first selected item
     if (newMode === 'single' && selectedIds.length > 1) {
       const newSelectedIds = [selectedIds[0]];
-      setSelectedIds(newSelectedIds);
+      
+      // Only update internal state if we're in uncontrolled mode
+      if (!isControlled) {
+        setInternalSelectedIds(newSelectedIds);
+      }
+      
       onSelectionChange?.(newSelectedIds);
     }
     setSelectionMode(newMode);

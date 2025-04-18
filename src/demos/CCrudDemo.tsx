@@ -31,8 +31,10 @@ const CCrudDemo: React.FC = () => {
   // State for users data
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(initialUsers);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [appliedFilters, setAppliedFilters] = useState<FilterValues>({});
+  
+  // State for selected user IDs - directly provided to CTable
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   
   // State for CRUD operations
   const [crudAction, setCrudAction] = useState<CrudAction>(CrudAction.None);
@@ -256,7 +258,7 @@ const CCrudDemo: React.FC = () => {
       tooltip: 'Upravit vybraného uživatele',
       icon: <EditIcon />,
       onClick: () => handleToolbarAction('edit'),
-      disabled: selectedUsers.length !== 1 || crudAction !== CrudAction.None
+      disabled: selectedIds.length !== 1 || crudAction !== CrudAction.None
     },
     {
       id: 'delete',
@@ -264,7 +266,7 @@ const CCrudDemo: React.FC = () => {
       tooltip: 'Odstranit vybrané uživatele',
       icon: <DeleteIcon />,
       onClick: () => handleToolbarAction('delete'),
-      disabled: selectedUsers.length === 0 || crudAction !== CrudAction.None
+      disabled: selectedIds.length === 0 || crudAction !== CrudAction.None
     },
     {
       id: 'separator1',
@@ -278,7 +280,7 @@ const CCrudDemo: React.FC = () => {
       onClick: () => handleToolbarAction('refresh'),
       disabled: crudAction !== CrudAction.None
     }
-  ], [selectedUsers, crudAction]);
+  ], [selectedIds, crudAction]);
   
   // Form action buttons
   const formToolbarItems: ToolBarItemOrSeparator[] = useMemo(() => [
@@ -319,8 +321,8 @@ const CCrudDemo: React.FC = () => {
         break;
         
       case 'edit':
-        if (selectedUsers.length === 1) {
-          const user = users.find(u => u.id === selectedUsers[0]);
+        if (selectedIds.length === 1) {
+          const user = users.find(u => u.id === selectedIds[0]);
           if (user) {
             setCrudAction(CrudAction.Edit);
             setCurrentUser({ ...user });
@@ -331,11 +333,11 @@ const CCrudDemo: React.FC = () => {
         break;
         
       case 'delete':
-        if (selectedUsers.length > 0) {
-          if (window.confirm(`Opravdu chcete odstranit ${selectedUsers.length} uživatelů?`)) {
-            const updatedUsers = users.filter(user => !selectedUsers.includes(user.id));
+        if (selectedIds.length > 0) {
+          if (window.confirm(`Opravdu chcete odstranit ${selectedIds.length} uživatelů?`)) {
+            const updatedUsers = users.filter(user => !selectedIds.includes(user.id));
             setUsers(updatedUsers);
-            setSelectedUsers([]);
+            setSelectedIds([]);
           }
         }
         break;
@@ -347,7 +349,7 @@ const CCrudDemo: React.FC = () => {
       default:
         break;
     }
-  }, [selectedUsers, users, initialUsers]);
+  }, [selectedIds, users, initialUsers]);
   
   // Form submission handler
   const handleFormSubmit = () => {
@@ -368,7 +370,7 @@ const CCrudDemo: React.FC = () => {
         // Add new user
         setUsers(prev => [...prev, currentUser]);
         // Select the newly created user
-        setSelectedUsers([currentUser.id]);
+        setSelectedIds([currentUser.id]);
       } else if (crudAction === CrudAction.Edit) {
         // Update existing user
         setUsers(prev => 
@@ -376,7 +378,7 @@ const CCrudDemo: React.FC = () => {
         );
         // Re-select the edited user if we have an ID
         if (editingUserId) {
-          setSelectedUsers([editingUserId]);
+          setSelectedIds([editingUserId]);
         }
       }
       
@@ -422,8 +424,9 @@ const CCrudDemo: React.FC = () => {
               <CTable
                 columns={columns}
                 data={filteredUsers}
-                selectionMode="multi"
-                onSelectionChange={setSelectedUsers}
+                selectionMode="single"
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
                 onLinkClicked={handleLinkClick}
                 storageKey="crud-users-table"
                 allowSelectionModeChange={true}
