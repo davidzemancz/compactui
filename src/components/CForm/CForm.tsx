@@ -161,7 +161,7 @@ const CForm: React.FC<CFormProps> = ({
       <React.Fragment key={groupName}>
         {groupName && (
           <tr className="bg-gray-100">
-            <td colSpan={4} className="py-1 px-3">
+            <td colSpan={4} className="py-1 px-3 text-center">
               <h3 className="text-xs font-medium text-gray-700">{groupName}</h3>
             </td>
           </tr>

@@ -3,6 +3,9 @@ import CFilter from '../components/CFilter/CFilter';
 import CTable from '../components/CTable/CTable';
 import CToolBar, { ToolBarItemOrSeparator } from '../components/CToolBar/CToolBar';
 import CDrawerForm from '../components/CDrawerForm';
+import CDrawer from '../components/CDrawer';
+import CForm from '../components/CForm';
+import CWizard, { WizardStep } from '../components/CWizard';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { FormField } from '../components/CForm/types';
@@ -18,6 +21,7 @@ import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
 enum CrudAction {
   None = 'none',
   Create = 'create',
+  CreateWizard = 'create-wizard',
   Edit = 'edit',
   View = 'view'
 }
@@ -43,13 +47,15 @@ const CCrudDemo: React.FC = () => {
   
   // Add a state to control the drawer's visibility
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // Add a state to control the wizard drawer's visibility
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   
   // Form fields definition
   const [formFields, setFormFields] = useState<FormField[]>([]);
   
   // Prepare form fields when current user or action changes
   useEffect(() => {
-    if (crudAction === CrudAction.None) {
+    if (crudAction === CrudAction.None || crudAction === CrudAction.CreateWizard) {
       setFormFields([]);
       return;
     }
@@ -262,6 +268,13 @@ const CCrudDemo: React.FC = () => {
       onClick: () => handleToolbarAction('add')
     },
     {
+      id: 'add-wizard',
+      label: 'Přidat (Průvodce)',
+      tooltip: 'Přidat nového uživatele pomocí průvodce',
+      icon: <AddIcon />,
+      onClick: () => handleToolbarAction('add-wizard')
+    },
+    {
       id: 'edit',
       label: 'Upravit',
       tooltip: 'Upravit vybraného uživatele',
@@ -308,6 +321,24 @@ const CCrudDemo: React.FC = () => {
         setEditingUserId(null);
         // Open the drawer
         setIsDrawerOpen(true);
+        break;
+        
+      case 'add-wizard':
+        setCrudAction(CrudAction.CreateWizard);
+        // Initialize a new user with a valid ID
+        setCurrentUser({
+          id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+          name: '',
+          email: '',
+          role: 'User',
+          active: true,
+          joined: new Date().toISOString().slice(0, 10),
+          lastLogin: new Date().toISOString().slice(0, 10)
+        });
+        // Clear the editing user ID
+        setEditingUserId(null);
+        // Open the wizard drawer
+        setIsWizardOpen(true);
         break;
         
       case 'edit':
@@ -392,6 +423,257 @@ const CCrudDemo: React.FC = () => {
     setIsDrawerOpen(false);
   };
   
+  // Wizard completion handler
+  const handleWizardComplete = (userData: User) => {
+    setFormLoading(true);
+    
+    // Ensure we have a valid ID
+    const finalUserData = {
+      ...userData,
+      id: userData.id || (users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1)
+    };
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      // Add the new user
+      setUsers(prev => [...prev, finalUserData]);
+      // Select the newly created user
+      setSelectedIds([finalUserData.id]);
+      
+      // Reset state
+      setFormLoading(false);
+      setCrudAction(CrudAction.None);
+      setCurrentUser(null);
+      // Close the wizard drawer
+      setIsWizardOpen(false);
+    }, 800);
+  };
+  
+  // Wizard cancel handler
+  const handleWizardCancel = () => {
+    setCrudAction(CrudAction.None);
+    setCurrentUser(null);
+    // Close the wizard drawer
+    setIsWizardOpen(false);
+  };
+  
+  // Create a common interface for wizard step props
+  interface WizardStepProps {
+    formData: Partial<User>;
+    updateFormData: (data: Partial<User>) => void;
+  }
+
+  // Components for wizard steps - standardized with proper typing and using CForm
+  const BasicInfoStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+    const [nameError, setNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    
+    const validateName = (value: string) => {
+      if (!value.trim()) {
+        setNameError('Jméno je povinné');
+        return false;
+      }
+      setNameError('');
+      return true;
+    };
+    
+    const validateEmail = (value: string) => {
+      if (!value.trim()) {
+        setEmailError('Email je povinný');
+        return false;
+      }
+      if (!/^\S+@\S+\.\S+$/.test(value)) {
+        setEmailError('Neplatný formát emailu');
+        return false;
+      }
+      setEmailError('');
+      return true;
+    };
+
+    const handleFieldChange = (id: string, value: any) => {
+      if (id === 'name') {
+        validateName(value);
+      }
+      if (id === 'email') {
+        validateEmail(value);
+      }
+      updateFormData({ [id]: value });
+    };
+    
+    const fields: FormField[] = [
+      {
+        id: 'name',
+        name: 'Jméno',
+        type: 'text',
+        value: formData.name || '',
+        onChange: (value) => handleFieldChange('name', value),
+        required: true,
+        state: nameError ? 'error' : undefined,
+        stateMessage: nameError,
+        help: 'Celé jméno uživatele'
+      },
+      {
+        id: 'email',
+        name: 'Email',
+        type: 'text',
+        value: formData.email || '',
+        onChange: (value) => handleFieldChange('email', value),
+        required: true,
+        state: emailError ? 'error' : undefined,
+        stateMessage: emailError,
+        help: 'Kontaktní email'
+      }
+    ];
+    
+    return <CForm fields={fields} />;
+  };
+
+  const PermissionsStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+    const handleFieldChange = (id: string, value: any) => {
+      updateFormData({ [id]: value });
+    };
+    
+    const fields: FormField[] = [
+      {
+        id: 'role',
+        name: 'Role',
+        type: 'select',
+        value: formData.role || 'User',
+        onChange: (value) => handleFieldChange('role', value),
+        options: getUserRoleOptions(),
+        help: 'Oprávnění uživatele'
+      },
+      {
+        id: 'active',
+        name: 'Status účtu',
+        type: 'boolean',
+        value: formData.active !== undefined ? formData.active : true,
+        onChange: (value) => handleFieldChange('active', value),
+        help: 'Aktivní stav účtu uživatele'
+      }
+    ];
+    
+    return <CForm fields={fields} />;
+  };
+
+  const DatesStep: React.FC<WizardStepProps> = ({ formData, updateFormData }) => {
+    const today = new Date().toISOString().slice(0, 10);
+    
+    const handleFieldChange = (id: string, value: any) => {
+      updateFormData({ [id]: value });
+    };
+    
+    const fields: FormField[] = [
+      {
+        id: 'joined',
+        name: 'Datum registrace',
+        type: 'date',
+        value: formData.joined || today,
+        onChange: (value) => handleFieldChange('joined', value),
+        help: 'Datum vytvoření účtu'
+      },
+      {
+        id: 'lastLogin',
+        name: 'Poslední přihlášení',
+        type: 'date',
+        value: formData.lastLogin || today,
+        onChange: (value) => handleFieldChange('lastLogin', value),
+        help: 'Datum posledního přihlášení'
+      }
+    ];
+    
+    return <CForm fields={fields} />;
+  };
+
+  const SummaryStep: React.FC<WizardStepProps> = ({ formData }) => {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-xs font-medium text-gray-700">Shrnutí informací</h3>
+        
+        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <dt className="text-xs font-medium text-gray-500">Jméno:</dt>
+            <dd className="text-xs text-gray-700">{formData.name}</dd>
+            
+            <dt className="text-xs font-medium text-gray-500">Email:</dt>
+            <dd className="text-xs text-gray-700">{formData.email}</dd>
+            
+            <dt className="text-xs font-medium text-gray-500">Role:</dt>
+            <dd className="text-xs text-gray-700">{formData.role}</dd>
+            
+            <dt className="text-xs font-medium text-gray-500">Status:</dt>
+            <dd className="text-xs text-gray-700">{formData.active ? 'Aktivní' : 'Neaktivní'}</dd>
+            
+            <dt className="text-xs font-medium text-gray-500">Datum registrace:</dt>
+            <dd className="text-xs text-gray-700">{formData.joined}</dd>
+            
+            <dt className="text-xs font-medium text-gray-500">Poslední přihlášení:</dt>
+            <dd className="text-xs text-gray-700">{formData.lastLogin}</dd>
+          </dl>
+        </div>
+        
+        <p className="text-xs text-gray-600">
+          Klikněte na "Dokončit" pro vytvoření uživatele nebo se vraťte zpět pro úpravu informací.
+        </p>
+      </div>
+    );
+  };
+  
+  // Wizard step definitions with improved validation
+  const wizardSteps: WizardStep[] = [
+    {
+      id: 'basic-info',
+      title: 'Základní informace',
+      description: 'Zadejte jméno a email uživatele.',
+      component: <BasicInfoStep />,
+      validate: (stepData) => {
+        if (!stepData.name?.trim()) {
+          return { valid: false, message: 'Prosím vyplňte jméno.' };
+        }
+        if (!stepData.email?.trim()) {
+          return { valid: false, message: 'Prosím vyplňte email.' };
+        }
+        if (!/^\S+@\S+\.\S+$/.test(stepData.email)) {
+          return { valid: false, message: 'Prosím zadejte platný email.' };
+        }
+        return { valid: true };
+      }
+    },
+    {
+      id: 'permissions',
+      title: 'Oprávnění',
+      description: 'Nastavte roli a status účtu.',
+      component: <PermissionsStep />,
+      validate: (stepData) => {
+        if (!stepData.role) {
+          return { valid: false, message: 'Prosím vyberte roli.' };
+        }
+        return { valid: true };
+      }
+    },
+    {
+      id: 'dates',
+      title: 'Časové údaje',
+      description: 'Nastavte datumy registrace a posledního přihlášení.',
+      component: <DatesStep />,
+      validate: (stepData) => {
+        if (!stepData.joined) {
+          return { valid: false, message: 'Prosím vyberte datum registrace.' };
+        }
+        if (!stepData.lastLogin) {
+          return { valid: false, message: 'Prosím vyberte datum posledního přihlášení.' };
+        }
+        return { valid: true };
+      }
+    },
+    {
+      id: 'summary',
+      title: 'Souhrn',
+      description: 'Zkontrolujte zadané informace před vytvořením uživatele.',
+      component: <SummaryStep />
+    }
+  ];
+  
   return (
     <div className="h-full flex flex-col">
       {/* Main UI - Table with filters and toolbar - Always visible */}
@@ -422,7 +704,7 @@ const CCrudDemo: React.FC = () => {
         </div>
       </div>
       
-      {/* Drawer Form for Create/Edit operations */}
+      {/* Standard Drawer Form for Edit operations */}
       <CDrawerForm
         isOpen={isDrawerOpen}
         onClose={handleFormCancel}
@@ -434,6 +716,25 @@ const CCrudDemo: React.FC = () => {
         cancelLabel="Zrušit"
         onCancel={handleFormCancel}
       />
+      
+      {/* Wizard Drawer for Create operations */}
+      {isWizardOpen && (
+        <CDrawer
+          isOpen={isWizardOpen}
+          onClose={handleWizardCancel}
+          title="Přidat nového uživatele"
+          position="right"
+        >
+          <CWizard
+            steps={wizardSteps}
+            onComplete={handleWizardComplete}
+            onCancel={handleWizardCancel}
+            initialData={currentUser || {}}
+            loading={formLoading}
+            className="border-0 shadow-none"
+          />
+        </CDrawer>
+      )}
     </div>
   );
 };
