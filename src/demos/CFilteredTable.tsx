@@ -136,7 +136,7 @@ const CFilteredTable: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-xs font-bold mb-4">Filtrovaná tabulka</h1>
+            <h1 className="text-xs font-bold mb-4">Filtered table</h1>
 
             {/* Filter section */}
             <div className="mb-4">
