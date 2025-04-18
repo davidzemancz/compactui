@@ -23,6 +23,7 @@ export interface FormField {
   placeholder?: string;
   options?: SelectOption[];
   customField?: ReactNode;
+  group?: string;
 }
 
 export interface CFormProps {

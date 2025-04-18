@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CFormProps, FormField, FieldState } from './types';
 import CTextInput from '../CTextInput';
 import CNumberField from '../CNumberField';
@@ -16,6 +16,22 @@ const CForm: React.FC<CFormProps> = ({
   onCancel,
   loading = false
 }) => {
+  // Group fields by their group property
+  const groupedFields = useMemo(() => {
+    const groups: Record<string, FormField[]> = {};
+    
+    // Group fields
+    fields.forEach(field => {
+      const groupName = field.group || ''; // Default to empty string if no group
+      if (!groups[groupName]) {
+        groups[groupName] = [];
+      }
+      groups[groupName].push(field);
+    });
+    
+    return groups;
+  }, [fields]);
+
   // Render the appropriate field component based on type
   const renderField = (field: FormField) => {
     const commonProps = {
@@ -139,50 +155,68 @@ const CForm: React.FC<CFormProps> = ({
     }
   };
 
+  // Render a group of fields
+  const renderFieldGroup = (groupName: string, groupFields: FormField[]) => {
+    return (
+      <React.Fragment key={groupName}>
+        {groupName && (
+          <tr className="bg-gray-100">
+            <td colSpan={4} className="py-1 px-3">
+              <h3 className="text-xs font-medium text-gray-700">{groupName}</h3>
+            </td>
+          </tr>
+        )}
+        {groupFields.map((field) => (
+          <tr key={field.id}>
+            <td className="py-1 px-3 align-middle">
+              <label className="block text-xs font-medium text-gray-700">
+                {field.name}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            </td>
+            <td className="py-1 px-3 align-middle">
+              {renderField(field)}
+            </td>
+            <td className="py-1 px-3 align-middle">
+              {renderStateIndicator(field.state, field.stateMessage)}
+            </td>
+            <td className="py-1 px-3 align-middle">
+              {field.help && (
+                <p className="text-gray-500 text-xs">{field.help}</p>
+              )}
+            </td>
+          </tr>
+        ))}
+      </React.Fragment>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit} className={`bg-white rounded shadow-md ${className}`}>
       <table className="min-w-full border-collapse">
-        <thead className="bg-gray-50 border-b">
+        <thead className="bg-gray-50">
           <tr>
-            <th className="text-left py-2 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Field</th>
-            <th className="text-left py-2 px-3 w-2/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-            <th className="text-left py-2 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="text-left py-2 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Help</th>
+            <th className="text-left py-1 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Položka</th>
+            <th className="text-left py-1 px-3 w-2/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Hodnota</th>
+            <th className="text-left py-1 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Stav</th>
+            <th className="text-left py-1 px-3 w-1/5 text-xs font-medium text-gray-500 uppercase tracking-wider">Nápověda</th>
           </tr>
         </thead>
         <tbody>
-          {fields.map((field) => (
-            <tr key={field.id} className="border-b border-gray-200">
-              <td className="py-2 px-3 align-top">
-                <label className="block text-xs font-medium text-gray-700">
-                  {field.name}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-              </td>
-              <td className="py-2 px-3 align-top">
-                {renderField(field)}
-              </td>
-              <td className="py-2 px-3 align-top">
-                {renderStateIndicator(field.state, field.stateMessage)}
-              </td>
-              <td className="py-2 px-3 align-top">
-                {field.help && (
-                  <p className="text-gray-500 text-xs">{field.help}</p>
-                )}
-              </td>
-            </tr>
-          ))}
+          {Object.entries(groupedFields).map(([groupName, groupFields]) => 
+            renderFieldGroup(groupName, groupFields)
+          )}
         </tbody>
       </table>
       
       {(onSubmit || onCancel) && (
-        <div className="flex justify-end gap-3 p-4 bg-gray-50 border-t border-gray-200">
+        <div className="flex justify-end gap-3 p-3 bg-gray-50">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-gray-700 text-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-3 py-1 bg-white border border-gray-300 rounded shadow-sm text-gray-700 text-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {cancelLabel}
             </button>
@@ -191,7 +225,7 @@ const CForm: React.FC<CFormProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 bg-blue-600 border border-transparent rounded shadow-sm text-white text-xs hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center"
+              className="px-3 py-1 bg-blue-600 border border-transparent rounded shadow-sm text-white text-xs hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 flex items-center"
             >
               {loading && (
                 <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -19,7 +19,8 @@ const CFormDemo: React.FC = () => {
       value: 'johndoe',
       onChange: (value) => handleChange('username', value),
       required: true,
-      help: 'Enter your unique username'
+      help: 'Enter your unique username',
+      group: 'Account Information'
     },
     email: { 
       id: 'email',
@@ -30,7 +31,8 @@ const CFormDemo: React.FC = () => {
       required: true,
       help: 'We will never share your email',
       state: 'success',
-      stateMessage: 'Email is valid'
+      stateMessage: 'Email is valid',
+      group: 'Account Information'
     },
     role: { 
       id: 'role',
@@ -44,7 +46,8 @@ const CFormDemo: React.FC = () => {
         { value: 'editor', label: 'Editor' },
         { value: 'viewer', label: 'Viewer' }
       ],
-      help: 'Select your access role'
+      help: 'Select your access role',
+      group: 'Permissions'
     },
     age: { 
       id: 'age',
@@ -54,15 +57,8 @@ const CFormDemo: React.FC = () => {
       onChange: (value) => handleChange('age', value),
       help: 'Must be at least 18 years old',
       state: 'warning',
-      stateMessage: 'Age seems low for this role'
-    },
-    active: { 
-      id: 'active',
-      name: 'Active Status',
-      type: 'boolean',
-      value: true,
-      onChange: (value) => handleChange('active', value),
-      help: 'Set account status'
+      stateMessage: 'Age seems low for this role',
+      group: 'Personal Details'
     },
     dob: { 
       id: 'dob',
@@ -70,7 +66,17 @@ const CFormDemo: React.FC = () => {
       type: 'date',
       value: '1993-01-15',
       onChange: (value) => handleChange('dob', value),
-      help: 'Enter your birth date'
+      help: 'Enter your birth date',
+      group: 'Personal Details'
+    },
+    active: { 
+      id: 'active',
+      name: 'Active Status',
+      type: 'boolean',
+      value: true,
+      onChange: (value) => handleChange('active', value),
+      help: 'Set account status',
+      group: 'Permissions'
     },
     availableDates: { 
       id: 'availableDates',
@@ -78,7 +84,8 @@ const CFormDemo: React.FC = () => {
       type: 'daterange',
       value: ['2023-10-01', '2023-10-15'] as [string | null, string | null],
       onChange: (value) => handleChange('availableDates', value),
-      help: 'Select your availability period'
+      help: 'Select your availability period',
+      group: 'Personal Details'
     }
   });
 
