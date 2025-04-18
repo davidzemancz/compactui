@@ -11,8 +11,7 @@ const CTable: React.FC<CTableProps> = ({
   selectionMode = 'single',
   onSelectionChange,
   onLinkClicked,
-  storageKey,
-  stickyFooter = false
+  storageKey
 }) => {
   // Initialize sort config with data from localStorage if available
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
@@ -421,9 +420,7 @@ const CTable: React.FC<CTableProps> = ({
       )}
       
       {/* Table footer with row counts */}
-      <div className={`border-t border-gray-200 bg-gray-50 py-2 px-3 text-gray-600 flex justify-between items-center ${
-        stickyFooter ? 'sticky bottom-0 z-10' : ''
-      }`}>
+      <div className="border-t border-gray-200 bg-gray-50 py-2 px-3 text-gray-600 flex justify-between items-center">
         <div className="text-xs">
           Celkem záznamů: <span className="font-medium">{filteredAndSortedData.length}</span>
           {data.length !== filteredAndSortedData.length && (

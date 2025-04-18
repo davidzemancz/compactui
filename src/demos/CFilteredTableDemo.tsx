@@ -136,19 +136,19 @@ const CFilteredTableDemo: React.FC = () => {
     }, [allUsers, appliedFilters]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 h-full flex flex-col">
             {/* Filter section - Remove horizontal scrolling */}
-            <div className="overflow-hidden">
+            <div className="overflow-hidden shrink-0">
                 <CFilter
                     fields={filterFields}
                     onFilterApply={setAppliedFilters}
                     required={filteredUsers.length === 0 && allUsers.length > 0}
-                    className="p-3" // Remove min-width
+                    className="p-3"
                 />
             </div>
 
-            {/* Table section - Improved scrolling */}
-            <div className="h-[calc(100vh-220px)] bg-white rounded shadow overflow-x-auto overflow-y-auto">
+            {/* Table section - Use flex-grow instead of fixed height */}
+            <div className="flex-1 min-h-0 bg-white rounded shadow overflow-x-auto overflow-y-auto">
                 <CTable
                     columns={columns}
                     data={filteredUsers}
@@ -156,7 +156,6 @@ const CFilteredTableDemo: React.FC = () => {
                     onSelectionChange={setSelectedUsers}
                     onLinkClicked={handleLinkClick}
                     storageKey="filtered-users-table"
-                    stickyFooter={true}
                 />
             </div>
         </div>

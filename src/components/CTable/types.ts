@@ -18,5 +18,4 @@ export interface CTableProps {
   onSelectionChange?: (selectedIds: any[]) => void;
   onLinkClicked?: (rowId: any, columnKey: string, value: any) => void;
   storageKey?: string;
-  stickyFooter?: boolean;
 }

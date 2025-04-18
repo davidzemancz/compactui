@@ -106,16 +106,15 @@ const CFilter: React.FC<CFilterProps> = ({
     <div className={`bg-white rounded shadow-md p-4 ${className}`}>
       {/* Required message moved to the top */}
       {required && (
-        <div className="mb-3 text-xs text-amber-600 font-medium">
+        <div className="mb-2 text-xs text-amber-600 font-medium">
           Pro zobrazení dat zadejte filtr
         </div>
       )}
 
-      {/* Ensure filter content wraps properly without horizontal scrolling */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-2">
         {fields.map(field => (
           <div key={field.id} className="flex flex-col min-w-[180px] max-w-full">
-            <label className="mb-1 text-xs text-gray-700 font-medium truncate">{field.label}</label>
+            <label className="mb-0.5 text-xs text-gray-700 font-medium truncate">{field.label}</label>
             {renderField(field)}
           </div>
         ))}
