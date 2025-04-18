@@ -17,6 +17,8 @@ const CTable: React.FC<CTableProps> = ({
   // Add state to track the current selection mode
   const [selectionMode, setSelectionMode] = useState<SelectionMode>(initialSelectionMode);
   const [selectedIds, setSelectedIds] = useState<any[]>([]);
+  // Add state to track the last selected row for shift-click functionality
+  const [lastSelectedId, setLastSelectedId] = useState<any | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
     if (storageKey) {
       const savedSort = localStorage.getItem(`${storageKey}-sort`);
@@ -199,29 +201,59 @@ const CTable: React.FC<CTableProps> = ({
   };
 
   // Selection handlers
-  const handleSelectRow = (id: any, selected?: boolean) => {
+  const handleSelectRow = (id: any, selected?: boolean, event?: React.MouseEvent) => {
     let newSelectedIds: any[];
     
     if (selectionMode === 'single') {
       // In single mode, always select the clicked item (deselect others)
       newSelectedIds = [id];
+      setLastSelectedId(id);
     } else if (selectionMode === 'multi') {
-      if (selected === undefined) {
-        // Toggle selection
-        newSelectedIds = selectedIds.includes(id) 
-          ? selectedIds.filter(selId => selId !== id)
-          : [...selectedIds, id];
+      // Handle multi-selection with Shift key support
+      if (event?.shiftKey && lastSelectedId !== null) {
+        // Find the indices of the last selected item and the current item
+        const lastIndex = filteredAndSortedData.findIndex(row => row.id === lastSelectedId);
+        const currentIndex = filteredAndSortedData.findIndex(row => row.id === id);
+        
+        if (lastIndex !== -1 && currentIndex !== -1) {
+          // Determine the range to select
+          const startIndex = Math.min(lastIndex, currentIndex);
+          const endIndex = Math.max(lastIndex, currentIndex);
+          
+          // Get IDs of all rows in the range
+          const rangeIds = filteredAndSortedData
+            .slice(startIndex, endIndex + 1)
+            .map(row => row.id);
+          
+          // Combine existing selection with the range, ensuring no duplicates
+          const uniqueIds = new Set([...selectedIds, ...rangeIds]);
+          newSelectedIds = Array.from(uniqueIds);
+        } else {
+          // Fallback if indices can't be found
+          newSelectedIds = selected ? [...selectedIds, id] : selectedIds.filter(selId => selId !== id);
+        }
       } else {
-        // Explicit selection state
-        if (selected) {
-          // Add to selection if not already selected
+        // Normal multi-selection behavior without Shift key
+        if (selected === undefined) {
+          // Toggle selection
           newSelectedIds = selectedIds.includes(id) 
-            ? [...selectedIds] // Return a new array to trigger state update
+            ? selectedIds.filter(selId => selId !== id)
             : [...selectedIds, id];
         } else {
-          // Remove from selection
-          newSelectedIds = selectedIds.filter(selId => selId !== id);
+          // Explicit selection state
+          if (selected) {
+            // Add to selection if not already selected
+            newSelectedIds = selectedIds.includes(id) 
+              ? [...selectedIds] // Return a new array to trigger state update
+              : [...selectedIds, id];
+          } else {
+            // Remove from selection
+            newSelectedIds = selectedIds.filter(selId => selId !== id);
+          }
         }
+        
+        // Update last selected ID for future shift-clicks
+        setLastSelectedId(id);
       }
     } else {
       // Fallback for unknown selection mode

@@ -7,7 +7,7 @@ interface TableBodyProps {
   data: any[];
   selectionMode: SelectionMode;
   selectedIds: any[];
-  onSelectRow: (id: any, selected?: boolean) => void;
+  onSelectRow: (id: any, selected?: boolean, event?: React.MouseEvent) => void;
   columnOrder: string[];
   onLinkClicked?: (rowId: any, columnKey: string, value: any) => void;
 }
@@ -29,14 +29,14 @@ const TableBody: React.FC<TableBodyProps> = ({
           <tr 
             key={rowId}
             className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''} ${data.indexOf(row) % 2 === 0 ? 'bg-gray-50/30' : ''}`}
-            onClick={() => selectionMode === 'single' && onSelectRow(rowId)}
+            onClick={(e) => selectionMode === 'single' && onSelectRow(rowId, true, e)}
           >
             {selectionMode === 'multi' && (
               <td 
                 className="w-10 p-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectRow(rowId, !isSelected);
+                  onSelectRow(rowId, !isSelected, e);
                 }}
               >
                 <div className="flex items-center justify-center">
@@ -45,7 +45,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                     checked={isSelected}
                     onChange={(e) => {
                       e.stopPropagation();
-                      onSelectRow(rowId, e.target.checked);
+                      onSelectRow(rowId, e.target.checked, e.nativeEvent as unknown as React.MouseEvent);
                     }}
                     className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     onClick={(e) => e.stopPropagation()}
@@ -58,7 +58,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                 className="w-10 p-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectRow(rowId);
+                  onSelectRow(rowId, true, e);
                 }}
               >
                 <div className="flex items-center justify-center">
@@ -68,7 +68,7 @@ const TableBody: React.FC<TableBodyProps> = ({
                     onChange={(e) => {
                       e.stopPropagation();
                       if (e.target.checked) {
-                        onSelectRow(rowId);
+                        onSelectRow(rowId, true, e.nativeEvent as unknown as React.MouseEvent);
                       }
                     }}
                     className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
