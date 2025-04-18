@@ -83,7 +83,7 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen h-screen bg-gray-50 font-sans text-xs flex">
+      <div className="min-h-screen h-screen bg-gray-50 font-sans text-xs flex overflow-hidden">
         <CSideBar 
           items={sidebarItems} 
           title="CompactUI" 
@@ -91,7 +91,7 @@ const App: React.FC = () => {
         />
 
         {/* Main Content - Updated overflow handling */}
-        <main className="flex-1 p-6 overflow-x-auto overflow-y-auto">
+        <main className="flex-1 p-6 overflow-x-auto overflow-y-auto h-full">
           <div className="h-full mx-auto max-w-6xl">
             <Routes>
               <Route path="/" element={<Home />} />

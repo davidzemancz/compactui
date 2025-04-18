@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import CFilter from '../components/CFilter/CFilter';
 import CTable from '../components/CTable/CTable';
 import CToolBar, { ToolBarItemOrSeparator } from '../components/CToolBar/CToolBar';
-import CForm from '../components/CForm/CForm';
+import CDrawerForm from '../components/CDrawerForm';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { FormField } from '../components/CForm/types';
@@ -10,9 +10,7 @@ import {
   AddIcon, 
   EditIcon, 
   DeleteIcon, 
-  RefreshIcon, 
-  SaveIcon, 
-  CloseIcon 
+  RefreshIcon
 } from '../components/CIcons';
 import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
 
@@ -42,6 +40,9 @@ const CCrudDemo: React.FC = () => {
   const [formLoading, setFormLoading] = useState(false);
   // Add a state to track the user being edited for re-selection after save
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  
+  // Add a state to control the drawer's visibility
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
   // Form fields definition
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -249,8 +250,7 @@ const CCrudDemo: React.FC = () => {
       label: 'Přidat',
       tooltip: 'Přidat nového uživatele',
       icon: <AddIcon />,
-      onClick: () => handleToolbarAction('add'),
-      disabled: crudAction !== CrudAction.None
+      onClick: () => handleToolbarAction('add')
     },
     {
       id: 'edit',
@@ -258,7 +258,7 @@ const CCrudDemo: React.FC = () => {
       tooltip: 'Upravit vybraného uživatele',
       icon: <EditIcon />,
       onClick: () => handleToolbarAction('edit'),
-      disabled: selectedIds.length !== 1 || crudAction !== CrudAction.None
+      disabled: selectedIds.length !== 1
     },
     {
       id: 'delete',
@@ -266,7 +266,7 @@ const CCrudDemo: React.FC = () => {
       tooltip: 'Odstranit vybrané uživatele',
       icon: <DeleteIcon />,
       onClick: () => handleToolbarAction('delete'),
-      disabled: selectedIds.length === 0 || crudAction !== CrudAction.None
+      disabled: selectedIds.length === 0
     },
     {
       id: 'separator1',
@@ -277,30 +277,9 @@ const CCrudDemo: React.FC = () => {
       label: 'Obnovit',
       tooltip: 'Obnovit data',
       icon: <RefreshIcon />,
-      onClick: () => handleToolbarAction('refresh'),
-      disabled: crudAction !== CrudAction.None
+      onClick: () => handleToolbarAction('refresh')
     }
-  ], [selectedIds, crudAction]);
-  
-  // Form action buttons
-  const formToolbarItems: ToolBarItemOrSeparator[] = useMemo(() => [
-    {
-      id: 'save',
-      label: 'Uložit',
-      tooltip: 'Uložit změny',
-      icon: <SaveIcon />,
-      onClick: () => handleFormSubmit(),
-      disabled: formLoading
-    },
-    {
-      id: 'cancel',
-      label: 'Zrušit',
-      tooltip: 'Zrušit změny',
-      icon: <CloseIcon />,
-      onClick: () => handleFormCancel(),
-      disabled: formLoading
-    }
-  ], [formLoading]);
+  ], [selectedIds]);
   
   // Toolbar action handlers
   const handleToolbarAction = useCallback((action: string) => {
@@ -318,6 +297,8 @@ const CCrudDemo: React.FC = () => {
         });
         // Clear the editing user ID when adding a new user
         setEditingUserId(null);
+        // Open the drawer
+        setIsDrawerOpen(true);
         break;
         
       case 'edit':
@@ -328,6 +309,8 @@ const CCrudDemo: React.FC = () => {
             setCurrentUser({ ...user });
             // Save the ID of the user being edited for re-selection
             setEditingUserId(user.id);
+            // Open the drawer
+            setIsDrawerOpen(true);
           }
         }
         break;
@@ -352,7 +335,8 @@ const CCrudDemo: React.FC = () => {
   }, [selectedIds, users, initialUsers]);
   
   // Form submission handler
-  const handleFormSubmit = () => {
+  const handleFormSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!currentUser) return;
     
     // Check if email field has error state
@@ -386,6 +370,8 @@ const CCrudDemo: React.FC = () => {
       setFormLoading(false);
       setCrudAction(CrudAction.None);
       setCurrentUser(null);
+      // Close the drawer
+      setIsDrawerOpen(false);
     }, 800);
   };
   
@@ -393,66 +379,53 @@ const CCrudDemo: React.FC = () => {
   const handleFormCancel = () => {
     setCrudAction(CrudAction.None);
     setCurrentUser(null);
-  };
-  
-  // Handle form submission via CForm
-  const handleFormSubmitEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleFormSubmit();
+    // Close the drawer
+    setIsDrawerOpen(false);
   };
   
   return (
-    <div className="space-y-2 h-full flex flex-col">
-      {crudAction === CrudAction.None ? (
-        // Main UI - Table with filters and toolbar
-        <>
-          {/* Filter section */}
-          <div className="overflow-hidden shrink-0">
-            <CFilter
-              fields={filterFields}
-              onFilterApply={setAppliedFilters}
-              required={filteredUsers.length === 0 && users.length > 0}
-              className="p-2"
-            />
-          </div>
-          
-          {/* Table section with toolbar */}
-          <div className="flex-1 min-h-0 bg-white rounded shadow overflow-hidden flex flex-col">
-            <CToolBar items={toolbarItems} />
-            
-            <div className="overflow-x-auto overflow-y-auto flex-1">
-              <CTable
-                columns={columns}
-                data={filteredUsers}
-                selectionMode="single"
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                onLinkClicked={handleLinkClick}
-                storageKey="crud-users-table"
-                allowSelectionModeChange={true}
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        // Form UI - For creating or editing users
-        <div className="flex-1 flex flex-col">
-          <div className="mb-2">
-            <CToolBar items={formToolbarItems} />
-          </div>
-          
-          <div className="flex-1 overflow-auto">
-            <CForm
-              fields={formFields}
-              onSubmit={handleFormSubmitEvent}
-              loading={formLoading}
-              submitLabel="Uložit"
-              cancelLabel="Zrušit"
-              onCancel={handleFormCancel}
-            />
-          </div>
+    <div className="h-full flex flex-col">
+      {/* Main UI - Table with filters and toolbar - Always visible */}
+      <div className="overflow-hidden shrink-0">
+        <CFilter
+          fields={filterFields}
+          onFilterApply={setAppliedFilters}
+          required={filteredUsers.length === 0 && users.length > 0}
+          className="p-2"
+        />
+      </div>
+      
+      {/* Table section with toolbar */}
+      <div className="flex-1 min-h-0 bg-white rounded shadow overflow-hidden flex flex-col">
+        <CToolBar items={toolbarItems} />
+        
+        <div className="overflow-x-auto overflow-y-auto flex-1">
+          <CTable
+            columns={columns}
+            data={filteredUsers}
+            selectionMode="single"
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            onLinkClicked={handleLinkClick}
+            storageKey="crud-users-table"
+            allowSelectionModeChange={true}
+          />
         </div>
-      )}
+      </div>
+      
+      {/* Drawer Form for Create/Edit operations */}
+      <CDrawerForm
+        isOpen={isDrawerOpen}
+        onClose={handleFormCancel}
+        title={crudAction === CrudAction.Create ? 'Přidat uživatele' : 'Upravit uživatele'}
+        fields={formFields}
+        onSubmit={handleFormSubmit}
+        loading={formLoading}
+        submitLabel="Uložit"
+        cancelLabel="Zrušit"
+        onCancel={handleFormCancel}
+        width={500}
+      />
     </div>
   );
 };
