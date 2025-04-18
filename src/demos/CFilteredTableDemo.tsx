@@ -1,58 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import CFilter from '../components/CFilter/CFilter';
 import CTable from '../components/CTable/CTable';
 import CToolBar, { ToolBarItemOrSeparator } from '../components/CToolBar/CToolBar';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { AddIcon, EditIcon, DeleteIcon, RefreshIcon } from '../components/CIcons';
+import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    active: boolean;
-    joined: string;
-    lastLogin: string;
-}
-
-// Generate sample user data
-const generateUsers = (count: number): User[] => {
-    const roles = ['Admin', 'User', 'Manager', 'Developer', 'Designer', 'Tester'];
-    const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'David', 'Emma', 'Frank'];
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller'];
-
-    return Array.from({ length: count }, (_, i) => {
-        const id = i + 1;
-        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-        const name = `${firstName} ${lastName}`;
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
-        const role = roles[Math.floor(Math.random() * roles.length)];
-        const active = Math.random() > 0.3;
-
-        // Generate random dates
-        const now = new Date();
-        const joinedDate = new Date(now.getTime() - Math.random() * 365 * 24 * 60 * 60 * 1000);
-        const lastLoginDate = new Date(joinedDate.getTime() + Math.random() * (now.getTime() - joinedDate.getTime()));
-
-        const joined = joinedDate.toISOString().slice(0, 10);
-        const lastLogin = lastLoginDate.toISOString().slice(0, 10);
-
-        return { id, name, email, role, active, joined, lastLogin };
-    });
-};
-
-// Renamed from CFilteredTable to CFilteredTableDemo
 const CFilteredTableDemo: React.FC = () => {
-    // Generate sample data
+    // Generate sample data only once
     const allUsers = useMemo(() => generateUsers(100), []);
 
     // State for applied filters
     const [appliedFilters, setAppliedFilters] = useState<FilterValues>({});
 
-    // Filter field definitions
-    const filterFields: FilterField[] = [
+    // State for user selection
+    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+
+    // Filter field definitions with reusable role options
+    const filterFields: FilterField[] = useMemo(() => [
         {
             id: 'name',
             label: 'Jméno',
@@ -63,14 +29,7 @@ const CFilteredTableDemo: React.FC = () => {
             id: 'role',
             label: 'Role',
             type: 'select',
-            options: [
-                { value: 'Admin', label: 'Administrátor' },
-                { value: 'Manager', label: 'Manažer' },
-                { value: 'Developer', label: 'Vývojář' },
-                { value: 'Designer', label: 'Designér' },
-                { value: 'Tester', label: 'Tester' },
-                { value: 'User', label: 'Uživatel' }
-            ]
+            options: getUserRoleOptions()
         },
         {
             id: 'active',
@@ -82,10 +41,10 @@ const CFilteredTableDemo: React.FC = () => {
             label: 'Datum registrace',
             type: 'daterange'
         }
-    ];
+    ], []);
 
-    // Table column definitions
-    const columns: Column[] = [
+    // Table column definitions (memoized to prevent unnecessary rerenders)
+    const columns: Column[] = useMemo(() => [
         { key: 'id', header: 'ID', dataType: 'int' },
         { key: 'name', header: 'Jméno', dataType: 'string' },
         { key: 'email', header: 'Email', dataType: 'link', linkText: 'Poslat email' },
@@ -93,18 +52,19 @@ const CFilteredTableDemo: React.FC = () => {
         { key: 'active', header: 'Aktivní', dataType: 'bool' },
         { key: 'joined', header: 'Registrace', dataType: 'datetime', dateFormat: 'yyyy-MM-dd' },
         { key: 'lastLogin', header: 'Poslední přihlášení', dataType: 'datetime', dateFormat: 'yyyy-MM-dd' }
-    ];
+    ], []);
 
-    // Handler for when a table link is clicked
-    const handleLinkClick = (rowId: any, columnKey: string, value: any) => {
+    // Handler for when a table link is clicked (memoized with useCallback)
+    const handleLinkClick = useCallback((rowId: any, columnKey: string, value: any) => {
         alert(`Otevírání emailu pro: ${value}`);
-    };
+    }, []);
 
-    // Handler for when selection changes
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
-
-    // Apply filters to the data
+    // Apply filters to the data (optimized implementation)
     const filteredUsers = useMemo(() => {
+        if (Object.keys(appliedFilters).length === 0) {
+            return allUsers; // Return all data if no filters applied
+        }
+
         return allUsers.filter(user => {
             return Object.entries(appliedFilters).every(([key, value]) => {
                 if (value === null || value === undefined || value === '') {
@@ -119,17 +79,15 @@ const CFilteredTableDemo: React.FC = () => {
                     case 'active':
                         return user.active === value;
                     case 'joined':
-                        {
-                            if (!Array.isArray(value)) return true;
+                        if (!Array.isArray(value)) return true;
 
-                            const userJoinDate = new Date(user.joined);
-                            const [startDate, endDate] = value;
+                        const userJoinDate = new Date(user.joined);
+                        const [startDate, endDate] = value;
 
-                            const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
-                            const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
+                        const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
+                        const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
 
-                            return isAfterStart && isBeforeEnd;
-                        }
+                        return isAfterStart && isBeforeEnd;
                     default:
                         return true;
                 }
@@ -137,21 +95,21 @@ const CFilteredTableDemo: React.FC = () => {
         });
     }, [allUsers, appliedFilters]);
 
-    // Create toolbar items
-    const toolbarItems: ToolBarItemOrSeparator[] = [
+    // Create toolbar items with memoization
+    const toolbarItems: ToolBarItemOrSeparator[] = useMemo(() => [
         {
             id: 'add',
             label: 'Přidat',
             tooltip: 'Přidat nový záznam',
             icon: <AddIcon />,
-            onClick: () => alert('Add button clicked')
+            onClick: () => handleToolbarAction('add')
         },
         {
             id: 'edit',
             label: 'Upravit',
             tooltip: 'Upravit vybraný záznam',
             icon: <EditIcon />,
-            onClick: () => alert('Edit button clicked'),
+            onClick: () => handleToolbarAction('edit'),
             disabled: selectedUsers.length !== 1
         },
         {
@@ -159,7 +117,7 @@ const CFilteredTableDemo: React.FC = () => {
             label: 'Odstranit',
             tooltip: 'Odstranit vybrané záznamy',
             icon: <DeleteIcon />,
-            onClick: () => alert('Delete button clicked'),
+            onClick: () => handleToolbarAction('delete'),
             disabled: selectedUsers.length === 0
         },
         {
@@ -171,13 +129,38 @@ const CFilteredTableDemo: React.FC = () => {
             label: 'Obnovit',
             tooltip: 'Obnovit data',
             icon: <RefreshIcon />,
-            onClick: () => alert('Refresh button clicked')
+            onClick: () => handleToolbarAction('refresh')
         }
-    ];
+    ], [selectedUsers]);
+
+    // Centralized toolbar action handler
+    const handleToolbarAction = useCallback((action: string) => {
+        switch (action) {
+            case 'add':
+                alert('Adding new user');
+                break;
+            case 'edit':
+                if (selectedUsers.length === 1) {
+                    const user = filteredUsers.find(u => u.id === selectedUsers[0]);
+                    alert(`Editing user: ${user?.name}`);
+                }
+                break;
+            case 'delete':
+                if (selectedUsers.length > 0) {
+                    alert(`Deleting ${selectedUsers.length} users`);
+                }
+                break;
+            case 'refresh':
+                alert('Refreshing data');
+                break;
+            default:
+                break;
+        }
+    }, [selectedUsers, filteredUsers]);
 
     return (
         <div className="space-y-4 h-full flex flex-col">
-            {/* Filter section - Remove horizontal scrolling */}
+            {/* Filter section */}
             <div className="overflow-hidden shrink-0">
                 <CFilter
                     fields={filterFields}
