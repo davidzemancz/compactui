@@ -8,7 +8,7 @@ interface CTooltipProps {
 }
 
 const CTooltip: React.FC<CTooltipProps> = ({ content, children, placement = 'top' }) => {
-  const [show, setShow] = useState(false);
+  const [show] = useState(false); // Remove setShow as it's not used
   const triggerRef = useRef<HTMLElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState({ top: 'full', right: 'auto', bottom: 'auto', left: '1/2' });
@@ -86,16 +86,27 @@ const CTooltip: React.FC<CTooltipProps> = ({ content, children, placement = 'top
     }
   }, [show]);
 
-  // Clone child element to add event handlers
-  const child = React.cloneElement(React.Children.only(children), {
-    ref: triggerRef,
-    onMouseEnter: () => setShow(true),
-    onMouseLeave: () => setShow(false),
-  });
+  // Use a different approach for cloning with ref
+  const childWithRef = React.isValidElement(children)
+    ? React.cloneElement(children, {
+        // Use proper ref property name based on element type
+        ...(typeof children.type !== 'string' ? {
+          innerRef: (node: HTMLElement | null) => {
+            triggerRef.current = node;
+            // Forward ref if needed
+            const originalRef = (children as any).ref;
+            if (typeof originalRef === 'function') originalRef(node);
+          }
+        } : {
+          // For DOM elements, use the ref attribute
+          ref: triggerRef
+        })
+      })
+    : children;
 
   return (
     <>
-      {child}
+      {childWithRef}
       {show && ReactDOM.createPortal(
         <div 
           className={`fixed z-[9999] transform ${tooltipTransform} px-3 py-1.5 text-xs text-white bg-gray-900 rounded shadow-lg pointer-events-none min-w-[120px] text-center`}

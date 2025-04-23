@@ -3,7 +3,7 @@ import CFilter from '../components/CFilter/CFilter';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 
 const CFilterDemo: React.FC = () => {
-  const [filterValues, setFilterValues] = useState<FilterValues>({});
+  const [, setFilterValues] = useState<FilterValues>({});
   const [appliedFilters, setAppliedFilters] = useState<FilterValues>({});
   const [isRequired, setIsRequired] = useState<boolean>(true);
   

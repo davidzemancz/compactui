@@ -7,7 +7,7 @@ interface TableHeaderProps {
   sortConfig: { key: string; direction: SortDirection };
   onSort: (key: string) => void;
   selectionMode: SelectionMode;
-  selectedIds: any[];
+  selectedIds: string[];
   data: any[];
   onSelectAll: (selected: boolean) => void;
   columnOrder: string[];
@@ -79,7 +79,7 @@ const TableHeader: React.FC<TableHeaderProps> = (props) => {
       onColumnResize(columnKey, newWidth);
     };
     
-    const handleMouseUp = (upEvent: MouseEvent) => {
+    const handleMouseUp = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       

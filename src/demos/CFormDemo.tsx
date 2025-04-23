@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import CForm from '../components/CForm/CForm';
-import { FormField, FieldState } from '../components/CForm/types';
-
-// Define a type that includes validation state for form fields
-interface FormDataWithValidation {
-  value: any;
-  state?: FieldState;
-  message?: string;
-}
+import { FormField } from '../components/CForm/types';
 
 const CFormDemo: React.FC = () => {
   // Integrated form data with validation state and field configuration

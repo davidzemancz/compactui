@@ -29,7 +29,6 @@ const CDrawerForm: React.FC<CDrawerFormProps> = ({
   loading = false,
   submitLabel = 'Save',
   cancelLabel = 'Cancel',
-  width = '650px', 
   position = 'right',
   closeOnClickOutside = false,
   footerContent,
@@ -48,10 +47,8 @@ const CDrawerForm: React.FC<CDrawerFormProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      width={width}
       position={position}
       closeOnClickOutside={closeOnClickOutside}
-      responsive={true}
     >
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">

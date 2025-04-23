@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import CTextInput from '../CTextInput/CTextInput';
 import CMenu from '../CMenu/CMenu';
 import CTooltip from '../CTooltip/CTooltip';
 import { SelectionMode } from './types';
-import { CheckboxIcon, RadioButtonIcon } from '../CIcons/index';
 
 interface TableToolbarProps {
   searchTerm: string;
@@ -38,7 +37,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   totalCount,
   filteredCount
 }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
   const menuItems = [
     {
       label: 'Exportovat do CSV',

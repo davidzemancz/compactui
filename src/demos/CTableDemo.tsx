@@ -46,7 +46,7 @@ const CTableDemo: React.FC = () => {
   const columns: Column[] = [
     { key: 'id', header: 'ID', dataType: 'int' },
     { key: 'name', header: 'Name', dataType: 'string' },
-    { key: 'email', header: 'Email', dataType: 'link', linkText: 'Send Email' },
+    { key: 'email', header: 'Email', dataType: 'link' },
     { key: 'role', header: 'Role', dataType: 'string' },
     { key: 'active', header: 'Status', dataType: 'bool' },
     { key: 'salary', header: 'Salary', dataType: 'decimal' },

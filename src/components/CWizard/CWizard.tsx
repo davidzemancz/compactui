@@ -76,10 +76,16 @@ const CWizard: React.FC<CWizardProps> = ({
   const renderCurrentStep = () => {
     if (!currentStep) return null;
     
-    return React.cloneElement(currentStep.component as React.ReactElement, {
-      stepIndex: currentStepIndex,
-      totalSteps: steps.length
-    });
+    // Use a more compatible approach for passing props to step components
+    const stepWithProps = React.isValidElement(currentStep.component)
+      ? React.cloneElement(currentStep.component, {
+          // Pass props directly on the element - make sure these match what the component expects
+          stepIndex: currentStepIndex,
+          totalSteps: steps.length
+        })
+      : currentStep.component;
+
+    return stepWithProps;
   };
   
   return (

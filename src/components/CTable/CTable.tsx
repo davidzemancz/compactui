@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import TableToolbar from './TableToolbar';
-import { CTableProps, Column, SortDirection, SelectionMode } from './types';
+import { CTableProps, SortDirection, SelectionMode } from './types';
 import { formatCellValue } from './utils';
 // If needed, add import for ExportIcon
 // import { ExportIcon } from '../CIcons/index';
@@ -20,7 +20,7 @@ const CTable: React.FC<CTableProps> = ({
   // Add state to track the current selection mode
   const [selectionMode, setSelectionMode] = useState<SelectionMode>(initialSelectionMode);
   // Internal state for uncontrolled mode
-  const [internalSelectedIds, setInternalSelectedIds] = useState<any[]>([]);
+  const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([]);
   
   // Determine if we're in controlled or uncontrolled mode
   const isControlled = externalSelectedIds !== undefined;
@@ -28,7 +28,7 @@ const CTable: React.FC<CTableProps> = ({
   const selectedIds = isControlled ? externalSelectedIds : internalSelectedIds;
   
   // Add state to track the last selected row for shift-click functionality
-  const [lastSelectedId, setLastSelectedId] = useState<any | null>(null);
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
     if (storageKey) {
       const savedSort = localStorage.getItem(`${storageKey}-sort`);
@@ -211,8 +211,8 @@ const CTable: React.FC<CTableProps> = ({
   };
 
   // Selection handlers updated to work with controlled/uncontrolled modes
-  const handleSelectRow = (id: any, selected?: boolean, event?: React.MouseEvent) => {
-    let newSelectedIds: any[];
+  const handleSelectRow = (id: string, selected?: boolean, event?: React.MouseEvent) => {
+    let newSelectedIds: string[];
     
     if (selectionMode === 'single') {
       // In single mode, always select the clicked item (deselect others)

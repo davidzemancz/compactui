@@ -5,22 +5,19 @@ export interface CDrawerProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  width?: string | number;
   closeOnClickOutside?: boolean;
   closeOnEsc?: boolean;
   position?: 'left' | 'right';
-  responsive?: boolean; // Add responsive prop
 }
 
 const CDrawer: React.FC<CDrawerProps> = ({
-  isOpen,
-  onClose,
-  title,
   children,
-  width = '400px',
+  title,
+  onClose,
+  position = 'right',
+  isOpen,
   closeOnClickOutside = true,
   closeOnEsc = true,
-  position = 'right',
 }) => {
   const drawerRef = useRef<HTMLDivElement>(null);
 

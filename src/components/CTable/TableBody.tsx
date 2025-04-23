@@ -6,10 +6,10 @@ interface TableBodyProps {
   columns: Column[];
   data: any[];
   selectionMode: SelectionMode;
-  selectedIds: any[];
-  onSelectRow: (id: any, selected?: boolean, event?: React.MouseEvent) => void;
+  selectedIds: string[]; // Changed from any[] to string[]
+  onSelectRow: (id: string, selected?: boolean, event?: React.MouseEvent) => void; // Updated parameter type
   columnOrder: string[];
-  onLinkClicked?: (rowId: any, columnKey: string, value: any) => void;
+  onLinkClicked?: (rowId: string, columnKey: string, value: any) => void;
 }
 
 const TableBody: React.FC<TableBodyProps> = ({ 
@@ -82,7 +82,7 @@ const TableBody: React.FC<TableBodyProps> = ({
               <td 
                 key={`${rowId}-${column.key}`}
                 className="p-2 whitespace-nowrap"
-                style={{ textAlign: getAlignmentType(column.dataType) as any }}
+                style={{ textAlign: getAlignmentType(column.dataType) as any  }}
                 title={column.dataType === 'link' ? String(row[column.key] || '') : String(row[column.key] || '')}
               >
                 {column.dataType === 'bool' ? (

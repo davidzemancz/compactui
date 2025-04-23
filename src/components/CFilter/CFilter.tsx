@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CFilterProps, FilterField, FilterValues, FilterFieldType } from './types';
+import { CFilterProps, FilterField, FilterValues } from './types';
 import { TextField, NumberField, DateField, DateRangeField, SelectField, BooleanField } from './FilterFields';
 
 const CFilter: React.FC<CFilterProps> = ({ 
@@ -42,7 +42,7 @@ const CFilter: React.FC<CFilterProps> = ({
     if (changed) {
       setFilterValues(updatedValues);
     }
-  }, [fields]);
+  }, [fields, filterValues]);
 
   // Notify parent component when filter values change (if applyOnChange is true)
   useEffect(() => {

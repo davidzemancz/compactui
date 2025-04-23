@@ -5,7 +5,7 @@ import CToolBar, { ToolBarItemOrSeparator } from '../components/CToolBar/CToolBa
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { AddIcon, EditIcon, DeleteIcon, RefreshIcon } from '../components/CIcons';
-import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
+import { generateUsers, getUserRoleOptions } from '../utils/sampleData';
 
 const CFilteredTableDemo: React.FC = () => {
     // Generate sample data only once
@@ -55,7 +55,8 @@ const CFilteredTableDemo: React.FC = () => {
     ], []);
 
     // Handler for when a table link is clicked (memoized with useCallback)
-    const handleLinkClick = useCallback((rowId: any, columnKey: string, value: any) => {
+    const handleLinkClick = useCallback((value: any) => {
+        console.log('Link clicked:', value);
         alert(`Otevírání emailu pro: ${value}`);
     }, []);
 

@@ -464,7 +464,7 @@ const CCrudDemo: React.FC = () => {
   }
 
   // Components for wizard steps - standardized with proper typing and using CForm
-  const BasicInfoStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+  const BasicInfoStep: React.FC<WizardStepProps> = () => {
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
     
@@ -509,7 +509,7 @@ const CCrudDemo: React.FC = () => {
       if (id === 'email') {
         validateEmail(value);
       }
-      setLocalData(prev => ({
+      setLocalData((prev: any) => ({
         ...prev,
         [id]: value
       }));
@@ -550,7 +550,7 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const PermissionsStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+  const PermissionsStep: React.FC<WizardStepProps> = () => {
     // Use local state that syncs with the global state
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
     const [localData, setLocalData] = useState(currentData);
@@ -564,7 +564,7 @@ const CCrudDemo: React.FC = () => {
     }, [localData]);
     
     const handleFieldChange = (id: string, value: any) => {
-      setLocalData(prev => ({
+      setLocalData((prev: any) => ({
         ...prev,
         [id]: value
       }));
@@ -593,7 +593,7 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const DatesStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+  const DatesStep: React.FC<WizardStepProps> = () => {
     const today = new Date().toISOString().slice(0, 10);
     
     // Use local state that syncs with the global state
@@ -609,7 +609,7 @@ const CCrudDemo: React.FC = () => {
     }, [localData]);
     
     const handleFieldChange = (id: string, value: any) => {
-      setLocalData(prev => ({
+      setLocalData((prev: any) => ({
         ...prev,
         [id]: value
       }));
@@ -637,7 +637,7 @@ const CCrudDemo: React.FC = () => {
     return <CForm fields={fields} />;
   };
 
-  const SummaryStep: React.FC<WizardStepProps> = ({ stepIndex, totalSteps }) => {
+  const SummaryStep: React.FC<WizardStepProps> = () => {
     // Use the parent component's state without modifying it
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
     
@@ -680,14 +680,14 @@ const CCrudDemo: React.FC = () => {
       id: 'basic-info',
       title: 'Základní informace',
       description: 'Zadejte jméno a email uživatele.',
-      component: <BasicInfoStep />,
+      component: <BasicInfoStep stepIndex={0} totalSteps={4} />,
       validate: () => (BasicInfoStep as any).validate()
     },
     {
       id: 'permissions',
       title: 'Oprávnění',
       description: 'Nastavte roli a status účtu.',
-      component: <PermissionsStep />,
+      component: <PermissionsStep stepIndex={1} totalSteps={4} />,
       validate: () => {
         const data = (window as any).__wizardData || {};
         if (!data.role) {
@@ -700,7 +700,7 @@ const CCrudDemo: React.FC = () => {
       id: 'dates',
       title: 'Časové údaje',
       description: 'Nastavte datumy registrace a posledního přihlášení.',
-      component: <DatesStep />,
+      component: <DatesStep stepIndex={2} totalSteps={4} />,
       validate: () => {
         const data = (window as any).__wizardData || {};
         if (!data.joined) {
@@ -716,7 +716,7 @@ const CCrudDemo: React.FC = () => {
       id: 'summary',
       title: 'Souhrn',
       description: 'Zkontrolujte zadané informace před vytvořením uživatele.',
-      component: <SummaryStep />
+      component: <SummaryStep stepIndex={3} totalSteps={4} />
     }
   ];
   
