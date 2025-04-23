@@ -33,14 +33,14 @@ const CToolBar: React.FC<CToolBarProps> = ({ items, className = '' }) => {
   // Update render function
   const renderToolbarItem = (item: ToolBarItemOrSeparator) => {
     if (isSeparator(item)) {
-      return <div key={item.id} className="c-toolbar-separator" />;
+      return <div key={item.id} className="c-toolbar-separator h-6 w-px bg-gray-300 mx-1" />;
     }
     
     // Now TypeScript knows this is a ToolBarItem
     const button = (
       <button
         key={item.id}
-        className="c-toolbar-button"
+        className={`c-toolbar-button p-2 rounded hover:bg-gray-200 transition-colors ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={item.onClick}
         disabled={item.disabled}
         title={item.tooltip || item.label}

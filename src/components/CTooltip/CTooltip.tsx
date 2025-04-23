@@ -8,7 +8,7 @@ interface CTooltipProps {
 }
 
 const CTooltip: React.FC<CTooltipProps> = ({ content, children, placement = 'top' }) => {
-  const [show] = useState(false); // Remove setShow as it's not used
+  const [show, setShow] = useState(false);
   const triggerRef = useRef<HTMLElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState({ top: 'full', right: 'auto', bottom: 'auto', left: '1/2' });
@@ -86,9 +86,33 @@ const CTooltip: React.FC<CTooltipProps> = ({ content, children, placement = 'top
     }
   }, [show]);
 
+  // Mouse event handlers for showing/hiding tooltip
+  const handleMouseEnter = () => {
+    setShow(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShow(false);
+  };
+
   // Use a different approach for cloning with ref
   const childWithRef = React.isValidElement(children)
     ? React.cloneElement(children, {
+        // Add mouse enter/leave events to the child
+        onMouseEnter: (e: React.MouseEvent<Element>) => {
+          handleMouseEnter();
+          // Call the original onMouseEnter if it exists
+          if (children.props.onMouseEnter) {
+            children.props.onMouseEnter(e);
+          }
+        },
+        onMouseLeave: (e: React.MouseEvent<Element>) => {
+          handleMouseLeave();
+          // Call the original onMouseLeave if it exists
+          if (children.props.onMouseLeave) {
+            children.props.onMouseLeave(e);
+          }
+        },
         // Use proper ref property name based on element type
         ...(typeof children.type !== 'string' ? {
           innerRef: (node: HTMLElement | null) => {
@@ -101,7 +125,7 @@ const CTooltip: React.FC<CTooltipProps> = ({ content, children, placement = 'top
           // For DOM elements, use the ref attribute
           ref: triggerRef
         })
-      })
+      } as React.HTMLAttributes<HTMLElement> & Record<string, any>)
     : children;
 
   return (
