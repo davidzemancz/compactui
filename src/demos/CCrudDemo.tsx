@@ -9,10 +9,10 @@ import CWizard, { WizardStep } from '../components/CWizard';
 import { FilterValues, FilterField } from '../components/CFilter/types';
 import { Column } from '../components/CTable/types';
 import { FormField } from '../components/CForm/types';
-import { 
-  AddIcon, 
-  EditIcon, 
-  DeleteIcon, 
+import {
+  AddIcon,
+  EditIcon,
+  DeleteIcon,
   RefreshIcon
 } from '../components/CIcons';
 import { generateUsers, getUserRoleOptions, User } from '../utils/sampleData';
@@ -29,40 +29,40 @@ enum CrudAction {
 const CCrudDemo: React.FC = () => {
   // Generate initial sample data
   const initialUsers = useMemo(() => generateUsers(50), []);
-  
+
   // State for users data
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(initialUsers);
   const [appliedFilters, setAppliedFilters] = useState<FilterValues>({});
-  
+
   // State for selected user IDs - directly provided to CTable
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   // State for CRUD operations
   const [crudAction, setCrudAction] = useState<CrudAction>(CrudAction.None);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   // Add a state to track the user being edited for re-selection after save
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
-  
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+
   // Add a state to control the drawer's visibility
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   // Add a state to control the wizard drawer's visibility
   const [isWizardOpen, setIsWizardOpen] = useState(false);
-  
+
   // Form fields definition
   const [formFields, setFormFields] = useState<FormField[]>([]);
-  
+
   // Prepare form fields when current user or action changes
   useEffect(() => {
     if (crudAction === CrudAction.None || crudAction === CrudAction.CreateWizard) {
       setFormFields([]);
       return;
     }
-    
+
     // Default values for new user
     const userValues = currentUser || {
-      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+      id: users.length > 0 ? Math.max(...users.map(u => Number(u.id))) + 1 : 1,
       name: '',
       email: '',
       role: 'User',
@@ -70,7 +70,7 @@ const CCrudDemo: React.FC = () => {
       joined: new Date().toISOString().slice(0, 10),
       lastLogin: new Date().toISOString().slice(0, 10)
     };
-    
+
     // Create form fields based on the current user
     setFormFields([
       {
@@ -134,20 +134,20 @@ const CCrudDemo: React.FC = () => {
       }
     ]);
   }, [currentUser, crudAction, users]);
-  
+
   // Handle form field changes
   const handleFieldChange = (fieldId: string, value: any) => {
     setCurrentUser(prev => {
       if (!prev) return null;
       return { ...prev, [fieldId]: value };
     });
-    
+
     // Validate email format in real-time
     if (fieldId === 'email') {
       const emailField = formFields.find(field => field.id === 'email');
       if (emailField) {
         const updatedField = { ...emailField };
-        
+
         if (!value) {
           updatedField.state = 'error';
           updatedField.stateMessage = 'Email je povinný';
@@ -158,14 +158,14 @@ const CCrudDemo: React.FC = () => {
           updatedField.state = 'success';
           updatedField.stateMessage = 'Email je platný';
         }
-        
-        setFormFields(prev => 
+
+        setFormFields(prev =>
           prev.map(field => field.id === 'email' ? updatedField : field)
         );
       }
     }
   };
-  
+
   // Table column definitions
   const columns: Column[] = useMemo(() => [
     { key: 'id', header: 'ID', dataType: 'int' },
@@ -176,7 +176,7 @@ const CCrudDemo: React.FC = () => {
     { key: 'joined', header: 'Registrace', dataType: 'datetime', dateFormat: 'yyyy-MM-dd' },
     { key: 'lastLogin', header: 'Poslední přihlášení', dataType: 'datetime', dateFormat: 'yyyy-MM-dd' }
   ], []);
-  
+
   // Filter field definitions
   const filterFields: FilterField[] = useMemo(() => [
     {
@@ -202,20 +202,20 @@ const CCrudDemo: React.FC = () => {
       type: 'daterange'
     }
   ], []);
-  
+
   // Apply filters to users
   useEffect(() => {
     if (Object.keys(appliedFilters).length === 0) {
       setFilteredUsers(users);
       return;
     }
-    
+
     const filtered = users.filter(user => {
       return Object.entries(appliedFilters).every(([key, value]) => {
         if (value === null || value === undefined || value === '') {
           return true; // Skip empty filters
         }
-        
+
         switch (key) {
           case 'name':
             return user.name.toLowerCase().includes(String(value).toLowerCase());
@@ -224,26 +224,28 @@ const CCrudDemo: React.FC = () => {
           case 'active':
             return user.active === value;
           case 'joined':
-            if (!Array.isArray(value)) return true;
-            
-            const userJoinDate = new Date(user.joined);
-            const [startDate, endDate] = value;
-            
-            const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
-            const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
-            
-            return isAfterStart && isBeforeEnd;
+            {
+              if (!Array.isArray(value)) return true;
+
+              const userJoinDate = new Date(user.joined);
+              const [startDate, endDate] = value;
+
+              const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
+              const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
+
+              return isAfterStart && isBeforeEnd;
+            }
           default:
             return true;
         }
       });
     });
-    
+
     setFilteredUsers(filtered);
   }, [users, appliedFilters]);
-  
+
   // Table link click handler - updated to handle name column clicks
-  const handleLinkClick = useCallback((rowId: any, columnKey: string, value: any) => {
+  const handleLinkClick = useCallback((rowId: string, columnKey: string, value: any) => {
     if (columnKey === 'email') {
       window.location.href = `mailto:${value}`;
     } else if (columnKey === 'name') {
@@ -257,7 +259,7 @@ const CCrudDemo: React.FC = () => {
       }
     }
   }, [users]);
-  
+
   // Create toolbar items with memoization
   const toolbarItems: ToolBarItemOrSeparator[] = useMemo(() => [
     {
@@ -302,14 +304,14 @@ const CCrudDemo: React.FC = () => {
       onClick: () => handleToolbarAction('refresh')
     }
   ], [selectedIds]);
-  
+
   // Toolbar action handlers
   const handleToolbarAction = useCallback((action: string) => {
     switch (action) {
       case 'add':
         setCrudAction(CrudAction.Create);
         setCurrentUser({
-          id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+          id: (users.length > 0 ? Math.max(...users.map(u => Number(u.id))) + 1 : 1).toString(),
           name: '',
           email: '',
           role: 'User',
@@ -322,12 +324,12 @@ const CCrudDemo: React.FC = () => {
         // Open the drawer
         setIsDrawerOpen(true);
         break;
-        
+
       case 'add-wizard':
         setCrudAction(CrudAction.CreateWizard);
         // Initialize a new user with a valid ID
         setCurrentUser({
-          id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+          id: (users.length > 0 ? Math.max(...users.map(u => Number(u.id))) + 1 : 1).toString(),
           name: '',
           email: '',
           role: 'User',
@@ -340,7 +342,7 @@ const CCrudDemo: React.FC = () => {
         // Open the wizard drawer
         setIsWizardOpen(true);
         break;
-        
+
       case 'edit':
         if (selectedIds.length === 1) {
           const user = users.find(u => u.id === selectedIds[0]);
@@ -354,7 +356,7 @@ const CCrudDemo: React.FC = () => {
           }
         }
         break;
-        
+
       case 'delete':
         if (selectedIds.length > 0) {
           if (window.confirm(`Opravdu chcete odstranit ${selectedIds.length} uživatelů?`)) {
@@ -364,30 +366,30 @@ const CCrudDemo: React.FC = () => {
           }
         }
         break;
-        
+
       case 'refresh':
         setUsers([...initialUsers]);
         break;
-        
+
       default:
         break;
     }
   }, [selectedIds, users, initialUsers]);
-  
+
   // Form submission handler
   const handleFormSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!currentUser) return;
-    
+
     // Check if email field has error state
     const emailField = formFields.find(field => field.id === 'email');
     if (emailField && emailField.state === 'error') {
       alert('Formulář obsahuje chyby. Prosím opravte je před odesláním.');
       return;
     }
-    
+
     setFormLoading(true);
-    
+
     // Simulate API call with timeout
     setTimeout(() => {
       if (crudAction === CrudAction.Create) {
@@ -397,7 +399,7 @@ const CCrudDemo: React.FC = () => {
         setSelectedIds([currentUser.id]);
       } else if (crudAction === CrudAction.Edit) {
         // Update existing user
-        setUsers(prev => 
+        setUsers(prev =>
           prev.map(user => user.id === currentUser.id ? currentUser : user)
         );
         // Re-select the edited user if we have an ID
@@ -405,7 +407,7 @@ const CCrudDemo: React.FC = () => {
           setSelectedIds([editingUserId]);
         }
       }
-      
+
       // Reset state
       setFormLoading(false);
       setCrudAction(CrudAction.None);
@@ -414,7 +416,7 @@ const CCrudDemo: React.FC = () => {
       setIsDrawerOpen(false);
     }, 800);
   };
-  
+
   // Form cancel handler
   const handleFormCancel = () => {
     setCrudAction(CrudAction.None);
@@ -422,24 +424,24 @@ const CCrudDemo: React.FC = () => {
     // Close the drawer
     setIsDrawerOpen(false);
   };
-  
+
   // Wizard completion handler
   const handleWizardComplete = (userData: User) => {
     setFormLoading(true);
-    
+
     // Ensure we have a valid ID
     const finalUserData = {
       ...userData,
-      id: userData.id || (users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1)
+      id: userData.id || (users.length > 0 ? Math.max(...users.map(u => Number(u.id))) + 1 : 1).toString()
     };
-    
+
     // Simulate API call with timeout
     setTimeout(() => {
       // Add the new user
       setUsers(prev => [...prev, finalUserData]);
       // Select the newly created user
       setSelectedIds([finalUserData.id]);
-      
+
       // Reset state
       setFormLoading(false);
       setCrudAction(CrudAction.None);
@@ -448,7 +450,7 @@ const CCrudDemo: React.FC = () => {
       setIsWizardOpen(false);
     }, 800);
   };
-  
+
   // Wizard cancel handler
   const handleWizardCancel = () => {
     setCrudAction(CrudAction.None);
@@ -456,7 +458,7 @@ const CCrudDemo: React.FC = () => {
     // Close the wizard drawer
     setIsWizardOpen(false);
   };
-  
+
   // Create a common interface for wizard step props
   interface WizardStepProps {
     stepIndex: number;
@@ -467,11 +469,11 @@ const CCrudDemo: React.FC = () => {
   const BasicInfoStep: React.FC<WizardStepProps> = () => {
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
-    
+
     // Use the parent component's state
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
     const [localData, setLocalData] = useState(currentData);
-    
+
     // Sync local data with the global data source
     useEffect(() => {
       (window as any).__wizardData = {
@@ -479,7 +481,7 @@ const CCrudDemo: React.FC = () => {
         ...localData
       };
     }, [localData]);
-    
+
     const validateName = (value: string) => {
       if (!value.trim()) {
         setNameError('Jméno je povinné');
@@ -488,7 +490,7 @@ const CCrudDemo: React.FC = () => {
       setNameError('');
       return true;
     };
-    
+
     const validateEmail = (value: string) => {
       if (!value.trim()) {
         setEmailError('Email je povinný');
@@ -514,14 +516,14 @@ const CCrudDemo: React.FC = () => {
         [id]: value
       }));
     };
-    
+
     // Implement validate function attached to the component instance
     (BasicInfoStep as any).validate = () => {
       const isNameValid = validateName(localData.name || '');
       const isEmailValid = validateEmail(localData.email || '');
       return isNameValid && isEmailValid;
     };
-    
+
     const fields: FormField[] = [
       {
         id: 'name',
@@ -546,7 +548,7 @@ const CCrudDemo: React.FC = () => {
         help: 'Kontaktní email'
       }
     ];
-    
+
     return <CForm fields={fields} />;
   };
 
@@ -554,7 +556,7 @@ const CCrudDemo: React.FC = () => {
     // Use local state that syncs with the global state
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
     const [localData, setLocalData] = useState(currentData);
-    
+
     // Sync local data with the global data source
     useEffect(() => {
       (window as any).__wizardData = {
@@ -562,14 +564,14 @@ const CCrudDemo: React.FC = () => {
         ...localData
       };
     }, [localData]);
-    
+
     const handleFieldChange = (id: string, value: any) => {
       setLocalData((prev: any) => ({
         ...prev,
         [id]: value
       }));
     };
-    
+
     const fields: FormField[] = [
       {
         id: 'role',
@@ -589,17 +591,17 @@ const CCrudDemo: React.FC = () => {
         help: 'Aktivní stav účtu uživatele'
       }
     ];
-    
+
     return <CForm fields={fields} />;
   };
 
   const DatesStep: React.FC<WizardStepProps> = () => {
     const today = new Date().toISOString().slice(0, 10);
-    
+
     // Use local state that syncs with the global state
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
     const [localData, setLocalData] = useState(currentData);
-    
+
     // Sync local data with the global data source
     useEffect(() => {
       (window as any).__wizardData = {
@@ -607,14 +609,14 @@ const CCrudDemo: React.FC = () => {
         ...localData
       };
     }, [localData]);
-    
+
     const handleFieldChange = (id: string, value: any) => {
       setLocalData((prev: any) => ({
         ...prev,
         [id]: value
       }));
     };
-    
+
     const fields: FormField[] = [
       {
         id: 'joined',
@@ -633,47 +635,47 @@ const CCrudDemo: React.FC = () => {
         help: 'Datum posledního přihlášení'
       }
     ];
-    
+
     return <CForm fields={fields} />;
   };
 
   const SummaryStep: React.FC<WizardStepProps> = () => {
     // Use the parent component's state without modifying it
     const currentData = useMemo(() => (window as any).__wizardData || {}, []);
-    
+
     return (
       <div className="space-y-4">
         <h3 className="text-xs font-medium text-gray-700">Shrnutí informací</h3>
-        
+
         <div className="bg-gray-50 p-3 rounded border border-gray-200">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
             <dt className="text-xs font-medium text-gray-500">Jméno:</dt>
             <dd className="text-xs text-gray-700">{currentData.name}</dd>
-            
+
             <dt className="text-xs font-medium text-gray-500">Email:</dt>
             <dd className="text-xs text-gray-700">{currentData.email}</dd>
-            
+
             <dt className="text-xs font-medium text-gray-500">Role:</dt>
             <dd className="text-xs text-gray-700">{currentData.role}</dd>
-            
+
             <dt className="text-xs font-medium text-gray-500">Status:</dt>
             <dd className="text-xs text-gray-700">{currentData.active ? 'Aktivní' : 'Neaktivní'}</dd>
-            
+
             <dt className="text-xs font-medium text-gray-500">Datum registrace:</dt>
             <dd className="text-xs text-gray-700">{currentData.joined}</dd>
-            
+
             <dt className="text-xs font-medium text-gray-500">Poslední přihlášení:</dt>
             <dd className="text-xs text-gray-700">{currentData.lastLogin}</dd>
           </dl>
         </div>
-        
+
         <p className="text-xs text-gray-600">
           Klikněte na "Dokončit" pro vytvoření uživatele nebo se vraťte zpět pro úpravu informací.
         </p>
       </div>
     );
   };
-  
+
   // Wizard step definitions with improved validation
   const wizardSteps: WizardStep[] = [
     {
@@ -719,7 +721,7 @@ const CCrudDemo: React.FC = () => {
       component: <SummaryStep stepIndex={3} totalSteps={4} />
     }
   ];
-  
+
   return (
     <div className="h-full flex flex-col">
       {/* Main UI - Table with filters and toolbar - Always visible */}
@@ -731,11 +733,11 @@ const CCrudDemo: React.FC = () => {
           className="p-2"
         />
       </div>
-      
+
       {/* Table section with toolbar */}
       <div className="flex-1 min-h-0 bg-white rounded shadow overflow-hidden flex flex-col">
         <CToolBar items={toolbarItems} />
-        
+
         <div className="overflow-x-auto overflow-y-auto flex-1">
           <CTable
             columns={columns}
@@ -749,7 +751,7 @@ const CCrudDemo: React.FC = () => {
           />
         </div>
       </div>
-      
+
       {/* Standard Drawer Form for Edit operations */}
       <CDrawerForm
         isOpen={isDrawerOpen}
@@ -762,7 +764,7 @@ const CCrudDemo: React.FC = () => {
         cancelLabel="Zrušit"
         onCancel={handleFormCancel}
       />
-      
+
       {/* Wizard Drawer for Create operations */}
       {isWizardOpen && (
         <CDrawer

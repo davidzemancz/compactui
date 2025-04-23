@@ -58,9 +58,9 @@ const CTableDemo: React.FC = () => {
   const users = useMemo(() => generateUsers(100), []);
 
   const [selectedMode, setSelectedMode] = useState<SelectionMode>('single');
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const handleLinkClick = (rowId: any, columnKey: string, value: any) => {
+  const handleLinkClick = (rowId: string, columnKey: string, value: any) => {
     alert(`Link clicked: Row ID: ${rowId}, Column: ${columnKey}, Value: ${value}`);
   };
 

@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -20,7 +20,7 @@ const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'M
  */
 export const generateUsers = (count: number): User[] => {
   return Array.from({ length: count }, (_, i) => {
-    const id = i + 1;
+    const id = (i + 1).toString();
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const name = `${firstName} ${lastName}`;

@@ -15,7 +15,7 @@ const CFilteredTableDemo: React.FC = () => {
     const [appliedFilters, setAppliedFilters] = useState<FilterValues>({});
 
     // State for user selection
-    const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
     // Filter field definitions with reusable role options
     const filterFields: FilterField[] = useMemo(() => [
@@ -80,15 +80,17 @@ const CFilteredTableDemo: React.FC = () => {
                     case 'active':
                         return user.active === value;
                     case 'joined':
-                        if (!Array.isArray(value)) return true;
+                        {
+                            if (!Array.isArray(value)) return true;
 
-                        const userJoinDate = new Date(user.joined);
-                        const [startDate, endDate] = value;
+                            const userJoinDate = new Date(user.joined);
+                            const [startDate, endDate] = value;
 
-                        const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
-                        const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
+                            const isAfterStart = !startDate || userJoinDate >= new Date(startDate);
+                            const isBeforeEnd = !endDate || userJoinDate <= new Date(endDate);
 
-                        return isAfterStart && isBeforeEnd;
+                            return isAfterStart && isBeforeEnd;
+                        }
                     default:
                         return true;
                 }
@@ -174,7 +176,7 @@ const CFilteredTableDemo: React.FC = () => {
             {/* Table section with toolbar */}
             <div className="flex-1 min-h-0 bg-white rounded shadow overflow-hidden flex flex-col">
                 <CToolBar items={toolbarItems} />
-                
+
                 <div className="overflow-x-auto overflow-y-auto flex-1">
                     <CTable
                         columns={columns}
