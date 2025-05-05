@@ -2,11 +2,22 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
 import TableToolbar from './TableToolbar';
-import { CTableProps, SortDirection, SelectionMode } from './types';
+import { CTableProps, SortDirection, SelectionMode, RowData } from './types';
 import { formatCellValue } from './utils';
-// If needed, add import for ExportIcon
-// import { ExportIcon } from '../CIcons/index';
 
+/**
+ * CTable Component
+ * 
+ * A comprehensive data table component with the following features:
+ * - Sorting by column
+ * - Filtering and searching
+ * - Single and multi-row selection
+ * - Column reordering via drag and drop
+ * - Column resizing
+ * - Persistent layout settings using localStorage
+ * - CSV export
+ * - Support for different data types with appropriate formatting
+ */
 const CTable: React.FC<CTableProps> = ({ 
   columns, 
   data,
@@ -17,19 +28,24 @@ const CTable: React.FC<CTableProps> = ({
   storageKey,
   allowSelectionModeChange = false
 }) => {
-  // Add state to track the current selection mode
+  // Track the current selection mode
   const [selectionMode, setSelectionMode] = useState<SelectionMode>(initialSelectionMode);
+  
   // Internal state for uncontrolled mode
   const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([]);
   
   // Determine if we're in controlled or uncontrolled mode
   const isControlled = externalSelectedIds !== undefined;
+  
   // Use the appropriate selectedIds based on controlled/uncontrolled mode
   const selectedIds = isControlled ? externalSelectedIds : internalSelectedIds;
   
-  // Add state to track the last selected row for shift-click functionality
+  // Track the last selected row for shift-click functionality
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+  
+  // Store the current sort configuration
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>(() => {
+    // Try to load sort configuration from localStorage if storageKey is provided
     if (storageKey) {
       const savedSort = localStorage.getItem(`${storageKey}-sort`);
       if (savedSort) {
@@ -49,11 +65,14 @@ const CTable: React.FC<CTableProps> = ({
     return { key: '', direction: null };
   });
   
+  // Store current search term for filtering
   const [searchTerm, setSearchTerm] = useState<string>('');
+  
+  // Control menu open state
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
-  // Initialize state with data from localStorage if available
+  // Track column order, loading from localStorage if available
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
     if (storageKey) {
       const savedOrder = localStorage.getItem(`${storageKey}-order`);
@@ -70,9 +89,11 @@ const CTable: React.FC<CTableProps> = ({
         }
       }
     }
+    // Default to the order columns are defined
     return columns.map(col => col.key);
   });
   
+  // Track column widths, loading from localStorage if available
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     // Try to load from localStorage first
     if (storageKey) {
@@ -109,6 +130,9 @@ const CTable: React.FC<CTableProps> = ({
   
   // Close menu when clicking outside
   useEffect(() => {
+    /**
+     * Handler to close the menu when clicking outside of it
+     */
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
@@ -121,26 +145,30 @@ const CTable: React.FC<CTableProps> = ({
     };
   }, [menuRef]);
   
-  // Save to localStorage when state changes
+  // Save sort configuration to localStorage when it changes
   useEffect(() => {
     if (storageKey) {
       localStorage.setItem(`${storageKey}-sort`, JSON.stringify(sortConfig));
     }
   }, [sortConfig, storageKey]);
   
+  // Save column order to localStorage when it changes
   useEffect(() => {
     if (storageKey && columnOrder.length > 0) {
       localStorage.setItem(`${storageKey}-order`, JSON.stringify(columnOrder));
     }
   }, [columnOrder, storageKey]);
   
+  // Save column widths to localStorage when they change
   useEffect(() => {
     if (storageKey && Object.keys(columnWidths).length > 0) {
       localStorage.setItem(`${storageKey}-widths`, JSON.stringify(columnWidths));
     }
   }, [columnWidths, storageKey]);
   
-  // Reset state to defaults
+  /**
+   * Reset all table state to defaults
+   */
   const handleReset = () => {
     // Reset sort configuration
     setSortConfig({ key: '', direction: null });
@@ -149,7 +177,7 @@ const CTable: React.FC<CTableProps> = ({
     const defaultOrder = columns.map(col => col.key);
     setColumnOrder(defaultOrder);
     
-    // Reset column widths
+    // Reset column widths to initial values
     const defaultWidths: Record<string, number> = {};
     columns.forEach(col => {
       if (col.width) {
@@ -157,6 +185,9 @@ const CTable: React.FC<CTableProps> = ({
       }
     });
     setColumnWidths(defaultWidths);
+    
+    // Clear search term
+    setSearchTerm('');
     
     // Clear localStorage if applicable
     if (storageKey) {
@@ -195,13 +226,17 @@ const CTable: React.FC<CTableProps> = ({
     }
   }, [columns]);
   
-  // Sorting handler
+  /**
+   * Handle column sorting
+   * @param key - Key of the column to sort by
+   */
   const handleSort = (key: string) => {
     const column = columns.find(col => col.key === key);
     if (!column) return;
 
     setSortConfig(prevConfig => {
       if (prevConfig.key === key) {
+        // Cycle through: asc -> desc -> none
         const direction = prevConfig.direction === 'asc' ? 'desc' : 
                           prevConfig.direction === 'desc' ? null : 'asc';
         return { key, direction };
@@ -210,7 +245,12 @@ const CTable: React.FC<CTableProps> = ({
     });
   };
 
-  // Selection handlers updated to work with controlled/uncontrolled modes
+  /**
+   * Handle row selection with support for shift-click multi-select
+   * @param id - ID of the row being selected
+   * @param selected - Optional explicit selection state (true/false)
+   * @param event - Optional mouse event for shift-click detection
+   */
   const handleSelectRow = (id: string, selected?: boolean, event?: React.MouseEvent) => {
     let newSelectedIds: string[];
     
@@ -275,23 +315,37 @@ const CTable: React.FC<CTableProps> = ({
       setInternalSelectedIds(newSelectedIds);
     }
     
-    // Always call the onSelectionChange callback
-    onSelectionChange?.(newSelectedIds);
+    // Always call the onSelectionChange callback if provided
+    if (onSelectionChange) {
+      onSelectionChange(newSelectedIds);
+    }
   };
 
+  /**
+   * Handle select all checkbox
+   * @param selected - Whether to select or deselect all rows
+   */
   const handleSelectAll = (selected: boolean) => {
-    const newSelectedIds = selected ? filteredAndSortedData.map(row => row.id) : [];
+    const newSelectedIds = selected 
+      ? filteredAndSortedData.map(row => String(row.id)) 
+      : [];
     
     // Only update internal state if we're in uncontrolled mode
     if (!isControlled) {
       setInternalSelectedIds(newSelectedIds);
     }
     
-    // Always call the onSelectionChange callback
-    onSelectionChange?.(newSelectedIds);
+    // Always call the onSelectionChange callback if provided
+    if (onSelectionChange) {
+      onSelectionChange(newSelectedIds);
+    }
   };
 
-  // Column reordering
+  /**
+   * Handle column reordering via drag and drop
+   * @param dragIndex - Index of the column being dragged
+   * @param hoverIndex - Index where the column is being dropped
+   */
   const handleColumnReorder = (dragIndex: number, hoverIndex: number) => {
     const newOrder = [...columnOrder];
     const draggedItem = newOrder[dragIndex];
@@ -300,7 +354,11 @@ const CTable: React.FC<CTableProps> = ({
     setColumnOrder(newOrder);
   };
 
-  // Column width adjustment
+  /**
+   * Handle column width adjustment
+   * @param columnKey - Key of the column being resized
+   * @param width - New width in pixels
+   */
   const handleColumnResize = (columnKey: string, width: number) => {
     setColumnWidths(prev => ({
       ...prev,
@@ -308,7 +366,9 @@ const CTable: React.FC<CTableProps> = ({
     }));
   };
 
-  // Filter and sort data
+  /**
+   * Filtered and sorted data based on current search term and sort configuration
+   */
   const filteredAndSortedData = useMemo(() => {
     // Filter data by search term
     let result = [...data];
@@ -349,19 +409,31 @@ const CTable: React.FC<CTableProps> = ({
           break;
         case 'datetime':
           try {
+            // Parse date strings if needed
             const parseDate = (dateStr: string): Date => {
-              const [datePart = '', timePart = ''] = dateStr.split(' ');
-              const [year = '0', month = '0', day = '0'] = datePart.split('-');
-              const [hours = '0', minutes = '0', seconds = '0'] = timePart.split(':');
+              if (dateStr instanceof Date) return dateStr;
               
-              return new Date(
-                parseInt(year, 10),
-                parseInt(month, 10) - 1,
-                parseInt(day, 10),
-                parseInt(hours, 10),
-                parseInt(minutes, 10),
-                parseInt(seconds, 10)
-              );
+              // Handle ISO date strings with or without time
+              if (typeof dateStr === 'string') {
+                const date = new Date(dateStr);
+                if (!isNaN(date.getTime())) return date;
+                
+                // If standard parsing fails, try custom format
+                const [datePart = '', timePart = ''] = dateStr.split(' ');
+                const [year = '0', month = '0', day = '0'] = datePart.split('-');
+                const [hours = '0', minutes = '0', seconds = '0'] = timePart.split(':');
+                
+                return new Date(
+                  parseInt(year, 10),
+                  parseInt(month, 10) - 1,
+                  parseInt(day, 10),
+                  parseInt(hours, 10),
+                  parseInt(minutes, 10),
+                  parseInt(seconds, 10)
+                );
+              }
+              
+              return new Date(0); // Fallback
             };
             
             const dateA = parseDate(String(aValue));
@@ -384,16 +456,21 @@ const CTable: React.FC<CTableProps> = ({
     });
   }, [data, searchTerm, sortConfig, columns]);
 
-  // Function to export data to CSV - organized and simplified
+  /**
+   * Export table data to CSV file
+   */
   const exportToCSV = () => {
     setMenuOpen(false);
     
-    const orderedColumns = columns.sort((a, b) => 
+    // Get columns in the correct order
+    const orderedColumns = [...columns].sort((a, b) => 
       columnOrder.indexOf(a.key) - columnOrder.indexOf(b.key)
     );
     
+    // Create header row
     const headerRow = orderedColumns.map(col => `"${col.header}"`).join(',');
     
+    // Create data rows
     const dataRows = filteredAndSortedData.map(row => {
       return orderedColumns.map(column => {
         const value = row[column.key];
@@ -410,25 +487,37 @@ const CTable: React.FC<CTableProps> = ({
           formattedValue = String(formatted);
         }
         
+        // Escape quotes in CSV
         return `"${formattedValue.replace(/"/g, '""')}"`;
       }).join(',');
     }).join('\n');
     
+    // Combine header and data
     const csvContent = `${headerRow}\n${dataRows}`;
+    
+    // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     
+    // Set download attributes
     link.setAttribute('href', url);
     link.setAttribute('download', `export-${new Date().toISOString().slice(0, 10)}.csv`);
     link.style.visibility = 'hidden';
+    
+    // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url); // Clean up by releasing the object URL
+    
+    // Clean up
+    URL.revokeObjectURL(url);
   };
 
-  // Handle selection mode change
+  /**
+   * Handle selection mode change (single/multi)
+   * @param newMode - New selection mode to set
+   */
   const handleSelectionModeChange = (newMode: SelectionMode) => {
     // If changing from multi to single, keep only the first selected item
     if (newMode === 'single' && selectedIds.length > 1) {
@@ -439,8 +528,13 @@ const CTable: React.FC<CTableProps> = ({
         setInternalSelectedIds(newSelectedIds);
       }
       
-      onSelectionChange?.(newSelectedIds);
+      // Notify parent component of selection change
+      if (onSelectionChange) {
+        onSelectionChange(newSelectedIds);
+      }
     }
+    
+    // Update selection mode
     setSelectionMode(newMode);
   };
   
@@ -451,6 +545,7 @@ const CTable: React.FC<CTableProps> = ({
 
   return (
     <div className="bg-white rounded shadow-md overflow-hidden w-full h-full flex flex-col text-xs">
+      {/* Toolbar with search, selection controls, and menu */}
       <TableToolbar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -462,15 +557,14 @@ const CTable: React.FC<CTableProps> = ({
         allowSelectionModeChange={allowSelectionModeChange}
         selectionMode={selectionMode}
         onSelectionModeChange={handleSelectionModeChange}
-        // Pass count information to toolbar
         selectedCount={selectedIds.length}
         totalCount={data.length}
         filteredCount={filteredAndSortedData.length}
       />
       
-      {/* Updated to ensure both horizontal and vertical scrolling work properly */}
+      {/* Table container with horizontal and vertical scrolling */}
       <div className="overflow-x-auto overflow-y-auto flex-1 relative">
-        <table className="min-w-max w-auto text-xs">
+        <table className="min-w-max w-auto text-xs" role="grid">
           <TableHeader 
             columns={columns}
             sortConfig={sortConfig}
@@ -496,13 +590,12 @@ const CTable: React.FC<CTableProps> = ({
         </table>
       </div>
       
+      {/* Empty state message */}
       {filteredAndSortedData.length === 0 && (
         <div className="text-center py-4 text-gray-500 italic bg-gray-50">
           Nebyla nalezena žádná data
         </div>
       )}
-      
-      {/* Remove the footer - we now show counts in the toolbar */}
     </div>
   );
 };
